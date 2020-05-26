@@ -35,6 +35,41 @@ def MAE_Loss(result, labels):
     return loss_mean
 
 
+def MAE_Loss_v2(result, labels):
+    loss_ = tf.abs(tf.subtract(result, labels))
+
+    # check the right map
+    mask1 = tf.cast(labels <= IMG_DISPARITY, dtype=tf.bool)
+    loss_ = tf.where(mask1, loss_, tf.zeros_like(loss_))
+    mask2 = tf.cast(labels > NO_DATA, dtype=tf.bool)
+    loss_ = tf.where(mask2, loss_, tf.zeros_like(loss_))
+
+    # calu the num
+    mask = tf.logical_and(mask1, mask2)
+
+    # > 1
+    mask3 = tf.cast(loss_ >= 1, dtype=tf.bool)
+    loss_1 = tf.cast(mask3, tf.float32) * (loss_ - 0.5)
+
+    mask3 = tf.cast(loss_ < 1, dtype=tf.bool)
+    loss_2 = tf.cast(mask3, tf.float32) * loss_
+    loss_2 = 0.5 * loss_2 * loss_2
+
+    loss_sum = tf.reduce_sum(loss_1 + loss_2)
+
+    mask = tf.cast(mask, tf.float32)
+    loss_mean = tf.div(loss_sum, tf.reduce_sum(mask) + LOSS_EPSILON)
+
+    # get the l2
+    # regularization_losses = tf.get_collection(
+    #    tf.GraphKeys.REGULARIZATION_LOSSES)
+
+    # get the loss
+    #loss_final = tf.add_n([loss_mean] + regularization_losses)
+    #loss_final = loss_mean
+    return loss_mean
+
+
 def L2_loss(loss, alphi=1):
 
     regularization_losses = tf.get_collection(

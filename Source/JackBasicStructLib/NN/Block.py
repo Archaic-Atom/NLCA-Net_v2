@@ -10,7 +10,7 @@ def Res2DBlock(x, ksize, name, training=True):
         x = Conv2DLayer(x, ksize, 1, filters_out, "ConvA", training=training)
         x = Conv2DLayer(x, ksize, 1, filters_out, "ConvB", relu=False, training=training)
 
-        x = shortcut + x
+        x = tf.add(shortcut, x)
         x = tf.nn.relu(x)
 
     return x
@@ -24,7 +24,7 @@ def Res3DBlock(x, ksize, name, training=True):
         x = Conv3DLayer(x, ksize, 1, filters_out, "ConvA", training=training)
         x = Conv3DLayer(x, ksize, 1, filters_out, "ConvB", relu=False, training=training)
 
-        x = shortcut + x
+        x = tf.add(shortcut, x)
         x = tf.nn.relu(x)
 
     return x
@@ -40,7 +40,7 @@ def Bottleneck2DBlock(x,  name, training=True):
         x = Conv2DLayer(x, 3, 1, filters_out, "ConvB", training=training)
         x = Conv2DLayer(x, 1, 1, shortcutFeatureNum, "ConvC", relu=False, training=training)
 
-        x = x + shortcut
+        x = tf.add(x, shortcut)
         x = tf.nn.relu(x)
 
     return x
@@ -54,7 +54,7 @@ def ResAtrousBlock(x, ksize, rate, name, training=True):
         x = AtrousConv2DLayer(x, ksize, rate, filters_out, "ConvA", training=training)
         x = AtrousConv2DLayer(x, ksize, rate, filters_out, "ConvB", relu=False, training=training)
 
-        x = x + shortcut
+        x = tf.add(x, shortcut)
         x = tf.nn.relu(x)
 
     return x
@@ -137,12 +137,12 @@ def SpaceTimeNonlocalBlock(x, name, training=True):
 
         theta = Conv3DLayer(theta, 1, 1, shortcutFeatureNum, "SpacetimeNonlocalConvBN",
                             False, True, False, training)
-        x = x + theta
+        x = tf.add(x, theta)
 
     return x
 
 
-def GCBlock(x, name, training=True):
+def GCBlock(x, name, r=16, training=True):
     with tf.variable_scope(name + "/GCBlock"):
         batchsize, height, width, shortcutFeatureNum = x.get_shape().as_list()
         with tf.variable_scope("k"):
@@ -156,12 +156,14 @@ def GCBlock(x, name, training=True):
             theta = tf.matmul(theta, k)
             theta = tf.reshape(theta, shape=(batchsize, 1, 1, shortcutFeatureNum))
 
-            theta = Conv2DLayer(theta, 1, 1, shortcutFeatureNum,
-                                "GCblockTheta", False, True, True, training)
+            theta = Conv2DLayer(theta, 1, 1, shortcutFeatureNum // r,
+                                "GCblockTheta", False, False, False, training)
+            theta = LayerNorm(theta, "LayerNorm")
+            theta = tf.nn.relu(theta)
             theta = Conv2DLayer(theta, 1, 1, shortcutFeatureNum,
                                 "GCblockSE", False, False, False, training)
             theta = tf.tile(theta, [1, height, width, 1])
 
-        x = x + theta
+        x = tf.add(x, theta)
 
     return x

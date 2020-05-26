@@ -12,24 +12,40 @@ def ExtractUnaryFeatureModule(x, training=True):
         output_skip_2 = ExtractUnaryFeatureBlock4(output_skip_1, training=training)
         x = ASPPBlock(output_skip_2, 32, "ASPP", training=training)
         x = tf.concat([output_raw, output_skip_1, output_skip_2, x], axis=3)
-        x = ExtractUnaryFeatureBlock5(x, training=training)
-    return x
+        x_0 = ExtractUnaryFeatureBlock5(x, training=training)
+        x_1 = ExtractUnaryFeatureBlock6(x_0, training=training)
+        x_2 = ExtractUnaryFeatureBlock7(x_1, training=training)
+        x_3 = ExtractUnaryFeatureBlock8(x_2, training=training)
+        x_4 = ExtractUnaryFeatureBlock9(x_3, training=training)
+
+        multi_x = []
+        multi_x.append(x_0)
+        multi_x.append(x_1)
+        multi_x.append(x_2)
+        multi_x.append(x_3)
+        multi_x.append(x_4)
+    return multi_x
 
 
 def BuildCostVolumeModule(imgL, imgR, disp_num, training=True):
     with tf.variable_scope("BuildCostVolume") as scope:
-        cost_vol = []
-        for d in xrange(1, disp_num/4 + 1):
-            cost = BuildCostVolumeBlock(imgL, imgR, d)
-            cost = LearnCostBlock(cost, imgL, d, training=training)
-            cost_vol.append(cost)
-        cost_vol = tf.stack(cost_vol, axis=1)
-    return cost_vol
+        multi_cost_vol = []
+        cost_vol_0 = BuildCostVolumeBlock(imgL[0], imgR[0], disp_num, "cost_0")
+        cost_vol_1 = BuildCostVolumeBlock(imgL[1], imgR[1], disp_num / 2, "cost_1")
+        cost_vol_2 = BuildCostVolumeBlock(imgL[2], imgR[2], disp_num / 4, "cost_2")
+        cost_vol_3 = BuildCostVolumeBlock(imgL[3], imgR[3], disp_num / 8, "cost_3")
+        cost_vol_4 = BuildCostVolumeBlock(imgL[4], imgR[4], disp_num / 16, "cost_4")
+        multi_cost_vol.append(cost_vol_0)
+        multi_cost_vol.append(cost_vol_1)
+        multi_cost_vol.append(cost_vol_2)
+        multi_cost_vol.append(cost_vol_3)
+        multi_cost_vol.append(cost_vol_4)
+    return multi_cost_vol
 
 
-def MatchingModule(x, training=True):
+def MatchingModule(multi_cost_vol, training=True):
     with tf.variable_scope("MatchingModule"):
-        x = MatchingBlock(x, training=training)
+        x = FeatureMatchingBlock(multi_cost_vol, training=training)
         x = RecoverSizeBlock(x, training=training)
         x = SoftArgMinBlock(x)
     return x
@@ -43,15 +59,6 @@ def AttentionModule(x, dsp_num, training=True):
         dsp_attention = DspAttentionBlock(x, dsp_num, training=training)
 
     return seg_attention, dsp_attention
-
-
-def DispRefinementModule_v2(x, imgL, seg, training=True):
-    with tf.variable_scope("RefinementModule"):
-        shortcut = x
-        x = FeatureConcat(x, imgL, seg, training=training)
-        x = ResidualLearning(x, training=training)
-        x = shortcut + x
-    return x
 
 
 def DispRefinementModule(x, imgL, seg, training=True):

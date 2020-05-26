@@ -50,7 +50,6 @@ def BiasedBnActiveLayer(x, biased=False, bn=True, relu=True, training=True):
 
 def Conv2DLayer(x, ksize, stride, filters_out, name,
                 biased=False, bn=True, relu=True, training=True):
-
     with tf.variable_scope(name):
         x = Conv2D(x, ksize, stride, filters_out)
         x = BiasedBnActiveLayer(x, biased, bn, relu, training)
@@ -60,7 +59,6 @@ def Conv2DLayer(x, ksize, stride, filters_out, name,
 
 def AtrousConv2DLayer(x, ksize, rate, filters_out, name,
                       biased=False, bn=True, relu=True, training=True):
-
     with tf.variable_scope(name):
         x = AtrousConv2D(x, ksize, rate, filters_out)
         x = BiasedBnActiveLayer(x, biased, bn, relu, training)
@@ -70,7 +68,6 @@ def AtrousConv2DLayer(x, ksize, rate, filters_out, name,
 
 def DeConv2DLayer(x, ksize, stride, filters_out, name,
                   biased=False, bn=True, relu=True, training=True):
-
     with tf.variable_scope(name):
         x = DeConv2D(x, ksize, stride, filters_out)
         x = BiasedBnActiveLayer(x, biased, bn, relu, training)
@@ -80,7 +77,6 @@ def DeConv2DLayer(x, ksize, stride, filters_out, name,
 
 def Conv3DLayer(x, ksize, stride, filters_out, name,
                 biased=False, bn=True, relu=True, training=True):
-
     with tf.variable_scope(name):
         x = Conv3D(x, ksize, stride, filters_out)
         x = BiasedBnActiveLayer(x, biased, bn, relu, training)
@@ -90,12 +86,16 @@ def Conv3DLayer(x, ksize, stride, filters_out, name,
 
 def DeConv3DLayer(x, ksize, stride, filters_out, name,
                   biased=False, bn=True, relu=True, training=True):
-
     with tf.variable_scope(name):
         x = DeConv3D(x, ksize, stride, filters_out)
         x = BiasedBnActiveLayer(x, biased, bn, relu, training)
 
     return x
+
+
+def LayerNorm(x, name):
+    layers = tf.contrib.layers
+    return layers.layer_norm(x, center=True, scale=True, scope=name)
 
 
 def FullConnectLayer(x, filters_out, name,

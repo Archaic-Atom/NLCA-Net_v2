@@ -1,11 +1,6 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 from JackBasicStructLib.NN.Layer import *
 from JackBasicStructLib.NN.Block import *
-import numpy as np
-import tensorflow as tf
 
 
 def ExtractUnaryFeatureBlock1(x, training=True):
@@ -25,7 +20,7 @@ def ExtractUnaryFeatureBlock2(x, training=True):
     with tf.variable_scope("ExtractUnaryFeatureBlock2"):
         shortcut = Conv2DLayer(x, 3, 2, 64, "Conv_1", training=training)
         x = Conv2DLayer(x, 1, 2, 64, "Conv_w", training=training)
-        x = tf.add(x, shortcut)
+        x = x + shortcut
 
         res_block_num = 16
         for i in range(res_block_num):
@@ -57,6 +52,38 @@ def ExtractUnaryFeatureBlock5(x, training=True):
     return x
 
 
+def ExtractUnaryFeatureBlock6(x, training=True):
+    with tf.variable_scope("ExtractUnaryFeatureBlock6"):
+        x = Conv2DLayer(x, 3, 2, 32, "Conv_1", training=training)
+        x = Conv2DLayer(x, 3, 1, 32, "Conv_2", biased=True,
+                        bn=False, relu=False, training=training)
+    return x
+
+
+def ExtractUnaryFeatureBlock7(x, training=True):
+    with tf.variable_scope("ExtractUnaryFeatureBlock7"):
+        x = Conv2DLayer(x, 3, 2, 64, "Conv_1", training=training)
+        x = Conv2DLayer(x, 3, 1, 64, "Conv_2", biased=True,
+                        bn=False, relu=False, training=training)
+    return x
+
+
+def ExtractUnaryFeatureBlock8(x, training=True):
+    with tf.variable_scope("ExtractUnaryFeatureBlock8"):
+        x = Conv2DLayer(x, 3, 2, 96, "Conv_1", training=training)
+        x = Conv2DLayer(x, 3, 1, 96, "Conv_2", biased=True,
+                        bn=False, relu=False, training=training)
+    return x
+
+
+def ExtractUnaryFeatureBlock9(x, training=True):
+    with tf.variable_scope("ExtractUnaryFeatureBlock9"):
+        x = Conv2DLayer(x, 3, 2, 128, "Conv_1", training=training)
+        x = Conv2DLayer(x, 3, 1, 128, "Conv_2", biased=True,
+                        bn=False, relu=False, training=training)
+    return x
+
+
 def ExtractCostFeatureBlock(x, training=True):
     with tf.variable_scope("ExtractCostFeatureBlock"):
         x = Conv2DLayer(x, 3, 1, 128, "Conv_1", training=training)
@@ -65,19 +92,18 @@ def ExtractCostFeatureBlock(x, training=True):
     return x
 
 
-def BuildCostVolumeBlock(imgL, imgR, disp_num):
-    with tf.variable_scope("BuildCostVolumeBlock"):
+def BuildCostVolumeBlock(imgL, imgR, disp_num, name):
+    with tf.variable_scope(name + "/BuildCostVolumeBlock"):
         batchsize, height, width, feature_num = imgL.get_shape().as_list()
         cost_vol = []
-        for d in xrange(1, int(disp_num/4) + 1):
+        for d in xrange(1, disp_num/4 + 1):
             paddings = [[0, 0], [0, 0], [d, 0], [0, 0]]
             slice_featuresR = tf.slice(imgR, [0, 0, 0, 0],
                                        [-1, height, width - d, feature_num])
             slice_featuresR = tf.pad(slice_featuresR, paddings, "CONSTANT")
-            ave_feature = tf.add(imgL, slice_featuresR) / 2
-            ave_feature2 = tf.add(tf.square(imgL), tf.square(slice_featuresR)) / 2
+            ave_feature = (imgL + slice_featuresR) / 2
+            ave_feature2 = (tf.square(imgL) + tf.square(slice_featuresR)) / 2
             cost = ave_feature2 - tf.square(ave_feature)
-            #cost = tf.concat([imgL, slice_featuresR], axis=3)
             cost_vol.append(cost)
 
         cost_vol = tf.stack(cost_vol, axis=1)
@@ -92,28 +118,32 @@ def MatchingBlock(x, training=True):
     return x
 
 
-def EncoderBlock(x, training=True):
+def EncoderBlock(x, multi_cost_vol, training=True):
     with tf.variable_scope("EncoderBlock"):
         level_list = []
         # 1/8
         x = DownSamplingBlock(x, 3, 32, "Level_1", training=training)
+        x = x + multi_cost_vol[1]
         level_list.append(x)
 
         # 1/16
         x = DownSamplingBlock(x, 3, 64, "Level_2", training=training)
+        x = x + multi_cost_vol[2]
         level_list.append(x)
 
         # 1/32
         x = DownSamplingBlock(x, 3, 96, "Level_3", training=training)
+        x = x + multi_cost_vol[3]
         level_list.append(x)
 
         # 1/64
         x = DownSamplingBlock(x, 3, 128, "Level_4", training=training)
+        x = x + multi_cost_vol[4]
     return x, level_list
 
 
-def NonLocalGroupBlock(x, training=True):
-    with tf.variable_scope("NonLocalGroupBlock"):
+def NonLocalGroupBlock(x, name, training=True):
+    with tf.variable_scope(name + "/NonLocalGroupBlock"):
         x = SpaceTimeNonlocalBlock(x, "NonLocal_0", training=training)
         x = SpaceTimeNonlocalBlock(x, "NonLocal_1", training=training)
         x = SpaceTimeNonlocalBlock(x, "NonLocal_2", training=training)
@@ -123,14 +153,17 @@ def NonLocalGroupBlock(x, training=True):
     return x
 
 
-def FeatureMatchingBlock(x, training=True):
+def FeatureMatchingBlock(multi_cost_vol, training=True):
     with tf.variable_scope("FeatureMatchingBlock"):
-        x = MatchingBlock(x, training=training)
+        x = MatchingBlock(multi_cost_vol[0], training=training)
         shortcut = x
-        x, level_list = EncoderBlock(x, training=training)
-        x = NonLocalGroupBlock(x, training=training)
+        x, level_list = EncoderBlock(x, multi_cost_vol, training=training)
+        x = NonLocalGroupBlock(x, "NL_0", training=training)
+        level_list[2] = NonLocalGroupBlock(level_list[2], "NL_1", training=training)
+        level_list[1] = NonLocalGroupBlock(level_list[1], "NL_2", training=training)
+        #level_list[0] = NonLocalGroupBlock(level_list[0], "NL_3", training=training)
         x = DecoderBlock(x, level_list, training=training)
-        x = tf.add(shortcut, x)
+        x = shortcut + x
 
     return x
 
@@ -139,15 +172,15 @@ def DecoderBlock(x, level_list, training=True):
     with tf.variable_scope("DecoderBlock"):
         # 1/32
         x = UpSamplingBlock(x, 3, 96, "Level_3", training=training)
-        x = tf.add(x, level_list[2])
+        x = x + level_list[2]
 
         # 1/16
         x = UpSamplingBlock(x, 3, 64, "Level_2", training=training)
-        x = tf.add(x, level_list[1])
+        x = x + level_list[1]
 
         # 1/8
         x = UpSamplingBlock(x, 3, 32, "Level_1", training=training)
-        x = tf.add(x, level_list[0])
+        x = x + level_list[0]
 
         # 1/4
         x = UpSamplingBlock(x, 3, 32, "Level_0", training=training)
@@ -174,18 +207,15 @@ def GetWeightBlock(batchsize, disp_num, height, width):
     return w
 
 
-def SoftArgMinBlock(x, reliability=0.65):
+def SoftArgMinBlock(x):
     with tf.variable_scope("SoftArgMin"):
         x = tf.squeeze(x, axis=4)
         batchsize, disp_num, height, width = x.get_shape().as_list()
         w = GetWeightBlock(batchsize, disp_num, height, width)
-        prob = tf.nn.softmax(x, axis=1)
-        x = tf.multiply(prob, w)
+        x = tf.nn.softmax(x, axis=1)
+        x = tf.multiply(x, w)
         x = tf.reduce_sum(x, axis=1)
-        mask = prob > reliability
-        mask = tf.cast(mask, tf.float32)
-        mask = tf.reduce_sum(mask, axis=1)
-    return x, mask
+    return x
 
 
 def FeatureConcat(x, imgL, seg, training=True):

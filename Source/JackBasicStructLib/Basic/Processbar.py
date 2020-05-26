@@ -1,5 +1,4 @@
 # -*- coding: UTF-8 -*-
-
 import sys
 import time
 
@@ -34,7 +33,7 @@ class ShowProcess():
             infoDone = ''
 
         if restTime != '':
-            restTime = '(time remaining: %.3f sec)' % restTime
+            restTime = '(tr: %.3f sec)' % restTime
 
         process_bar = '[' + self.info + '] [' + '>' * num_arrow  \
             + '-' * num_line + ']'                               \

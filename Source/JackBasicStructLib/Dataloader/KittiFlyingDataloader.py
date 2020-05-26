@@ -41,12 +41,15 @@ class KittiFlyingDataloader(object):
     def GetBatchTestImage(self, args, randomlist, num, isVal=False):
         top_pads = []
         left_pads = []
+        names = []
         for i in xrange(args.batchSize * args.gpu):
             idNum = randomlist[args.batchSize * args.gpu * num + i]
-            imgL, imgR, top_pad, left_pad = self.__GetPadingTestData(args, idNum)       # get img
+            imgL, imgR, top_pad, left_pad, name = self.__GetPadingTestData(
+                args, idNum)       # get img
 
             top_pads.append(top_pad)
             left_pads.append(left_pad)
+            names.append(name)
             if i == 0:
                 imgLs = imgL
                 imgRs = imgR
@@ -54,7 +57,7 @@ class KittiFlyingDataloader(object):
                 imgLs = np.concatenate((imgLs, imgL), axis=0)
                 imgRs = np.concatenate((imgRs, imgR), axis=0)
 
-        return imgLs, imgRs, top_pads, left_pads
+        return imgLs, imgRs, top_pads, left_pads, names
 
     def __GenerateOutImgPath(self, dirPath, filenameFormat, imgType, num):
         path = dirPath + filenameFormat % num + imgType
@@ -84,7 +87,7 @@ class KittiFlyingDataloader(object):
         imgGround = np.expand_dims(imgGround, axis=0)
         return imgGround
 
-    def __ReadData(self, args, pathL, pathR, pathGround):
+    def __ReadData(self, args, pathL, pathR, pathGround, pathStyle=None):
         # Flying Things and Kitti
         w = args.corpedImgWidth
         h = args.corpedImgHeight
@@ -93,22 +96,34 @@ class KittiFlyingDataloader(object):
         imgL = ReadImg(pathL)
         imgR = ReadImg(pathR)
 
+        if pathStyle != None:
+            imgRef = ReadImg(pathStyle)
+            imgL, imgR = StyleDataAugmentation(imgL, imgR, imgRef)
+
+        d = DispDataAugmentation()
+
         # random crop
-        x, y = RandomOrg(imgL.shape[1], imgL.shape[0], w, h)
+        x, y = RandomOrg(imgL.shape[1], imgL.shape[0], w + d, h)
         imgL = ImgSlice(imgL, x, y, w, h)
         imgL = Standardization(imgL)
         imgL = np.expand_dims(imgL, axis=0)
 
         # the right img
-        imgR = ImgSlice(imgR, x, y, w, h)
+        imgR = ImgSlice(imgR, x + d, y, w, h)
         imgR = Standardization(imgR)
         imgR = np.expand_dims(imgR, axis=0)
 
+        file_type = os.path.splitext(pathGround)[-1]
+
         # get groundtrue
-        if args.dataset == "KITTI":
+        if file_type == ".png":
             imgGround = self.__ReadRandomGroundTrue(pathGround, x, y, w, h)
         else:
             imgGround = self.__ReadRandomPfmGroundTrue(pathGround, x, y, w, h)
+
+        mask = imgGround > 0
+        mask = mask.astype(np.float32)
+        imgGround = mask * (imgGround + d)
 
         return imgL, imgR, imgGround
 
@@ -118,7 +133,12 @@ class KittiFlyingDataloader(object):
         pathR = GetPath(args.trainListPath, 2*(num + 1))
         pathGround = GetPath(args.trainLabelListPath, num + 1)
 
-        imgL, imgR, imgGround = self.__ReadData(args, pathL, pathR, pathGround)
+        if args.styleTransfer == False:
+            pathStyle = None
+        else:
+            pathStyle = GetPath(args.styleListPath, num % args.styleImgNum + 1)
+
+        imgL, imgR, imgGround = self.__ReadData(args, pathL, pathR, pathGround, pathStyle)
 
         return imgL, imgR, imgGround
 
@@ -154,4 +174,11 @@ class KittiFlyingDataloader(object):
         imgR = np.lib.pad(imgR, ((0, 0), (top_pad, 0), (0, left_pad),
                                  (0, 0)), mode='constant', constant_values=0)
 
-        return imgL, imgR, top_pad, left_pad
+        name = None
+        if args.dataset == "ETH3D" or args.dataset == "Middlebury":
+            pos = pathL.rfind('/')
+            left_name = pathL[0:pos]
+            pos = left_name.rfind('/')
+            name = left_name[pos + 1:]
+
+        return imgL, imgR, top_pad, left_pad, name
