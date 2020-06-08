@@ -2,6 +2,7 @@
 .idea
 sftp-config.json
 sftp-config-alt.json
+sftp-config-alt2.json
 *.log
 *.png
 *.zip
@@ -12,3 +13,4 @@ untitled.sublime-workspace
 /SceneFlowResultImg
 /ResultImg
 /ResultImg*
+Submission/
