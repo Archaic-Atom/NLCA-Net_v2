@@ -95,32 +95,36 @@ class NLCANet(ModelTemplate):
         with tf.variable_scope("NLCANet"):
             Info('├── Begin Build ExtractUnaryFeature')
             with tf.variable_scope("ExtractUnaryFeature") as scope:
-                imgL_feature = ExtractUnaryFeatureModule(imgL, training=training)
+                imgL_feature = ExtractUnaryFeatureModule().Inference(imgL, training=training)
                 scope.reuse_variables()
-                imgR_feature = ExtractUnaryFeatureModule(imgR, training=training)
+                imgR_feature = ExtractUnaryFeatureModule().Inference(imgR, training=training)
             Info('│   └── After ExtractUnaryFeature:' + str(imgL_feature.get_shape()))
 
             Info('├── Begin Build Cost Volume')
-            cost_vol = BuildCostVolumeModule(imgL_feature, imgR_feature,
-                                             IMG_DISPARITY, training=training)
+            cost_vol = BuildCostVolumeModule().Inference(imgL_feature,
+                                                         imgR_feature,
+                                                         IMG_DISPARITY,
+                                                         training=training)
             Info('│   └── After Cost Volume:' + str(cost_vol.get_shape()))
 
             Info('├── Begin Build 3DMatching')
-            coarse_map, mask = MatchingModule(cost_vol, reliability=0.65, training=training)
+            coarse_map, mask = MatchingModule().Inference(cost_vol,
+                                                          reliability=0.65,
+                                                          training=training)
             Info('│   └── After 3DMatching:' + str(coarse_map.get_shape()))
 
             Info('├── Begin Build Guidance')
-            guidance = GetGuidanceModule(imgL, training=training)
+            guidance = GetGuidanceModule().Inference(imgL, training=training)
             Info('│   └── After Guidance:' + str(guidance.get_shape()))
 
             Info('├── Begin Build DispMapRefine')
-            output_cspn = DispRefinementModule(coarse_map, mask,
-                                               guidance, training=training)
+            output_cspn = DispRefinementModule().Inference(coarse_map, mask,
+                                                           guidance, training=training)
             Info('│   └── After DispMapRefine:' + str(output_cspn.get_shape()))
 
             Info('└── Begin Build Fusion')
-            refine_map = FusionModule(coarse_map, output_cspn, imgL,
-                                      imgL_feature, training=training)
+            refine_map = FusionModule().Inference(coarse_map, output_cspn, imgL,
+                                                  imgL_feature, training=training)
             Info('    └── After Fusion:' + str(refine_map.get_shape()))
 
         return coarse_map, output_cspn, refine_map

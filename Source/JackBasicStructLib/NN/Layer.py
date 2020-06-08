@@ -35,11 +35,11 @@ def BiasedBnActiveLayer(x, biased=False, bn=True, relu=True, training=True):
             x = Biased(x)
 
         if bn == True:
-            x = BN(x, training)
+            #x = BN(x, training)
             # if len(x.get_shape()) == 5:
             #    x = BN(x, training)
             # if len(x.get_shape()) == 4:
-            #    x = GN(x, 8)
+            x = GN(x, 8)
 
         if relu == True:
             #x = tf.nn.relu(x)

@@ -1,20 +1,20 @@
 >This is the project of the StereoMatching Project. This project based on my framework (if you want to use it to build the Network, you can find it in my website: [fadeshine](http://www.fadeshine.com/). If you have any questions, you can send an e-mail to me. My e-mail: raoxi36@foxmail.com)
 
 ### Software Environment
-1. OS Environment  
-    os == linux 16.04  
-    cudaToolKit == 9.0  
-    cudnn == 7.3.0  
-2. Python Environment  
-    python == 2.7.15  
-    tensorflow == 1.9.0  
-    numpy == 1.14.5  
-    opencv == 3.4.0  
-    PIL == 5.1.0  
+1. OS Environment
+os == linux 16.04
+cudaToolKit == 9.0
+cudnn == 7.3.0
+2. Python Environment
+python == 2.7.15
+tensorflow == 1.9.0
+numpy == 1.14.5
+opencv == 3.4.0
+PIL == 5.1.0
 
 ### Hardware Environment
-- GPU: 1080TI * 4 or other memory at least 11G.(Batch size: 2)  
-if you not have four gpus, you could change the para of model. The Minimum hardware requirement:  
+- GPU: 1080TI * 4 or other memory at least 11G.(Batch size: 2)
+if you not have four gpus, you could change the para of model. The Minimum hardware requirement:
 - GPU: memory at least 5G. (Batch size: 1)
 
 ### Train the model by running:
@@ -46,39 +46,57 @@ $ vi TestStart.sh
 
 ### File Struct
 ```
-.                          
-├── Source # source code                 
-│   ├── Basic       
-│   ├── Evaluation       
-│   └── ...                
-├── Dataset # Get it by ./GenPath.sh, you need build folder                   
-│   ├── label_scene_flow.txt   
-│   ├── trainlist_scene_flow.txt   
-│   └── ...                
-├── Result # The data of Project. Auto Bulid                   
-│   ├── output.log   
-│   ├── train_acc.csv   
-│   └── ...       
-├── ResultImg # The image of Result. Auto Bulid                   
-│   ├── 000001_10.png   
-│   ├── 000002_10.png   
-│   └── ...       
-├── PAModel # The saved model. Auto Bulid                   
-│   ├── checkpoint   
-│   └── ...   
-├── log # The graph of model. Auto Bulid                   
-│   ├── events.out.tfevents.1541751559.ubuntu      
-│   └── ...       
+.
+├── Source # source code
+│   ├── Basic
+│   ├── Evaluation
+│   └── ...
+├── Dataset # Get it by ./GenPath.sh, you need build folder
+│   ├── label_scene_flow.txt
+│   ├── trainlist_scene_flow.txt
+│   └── ...
+├── Result # The data of Project. Auto Bulid
+│   ├── output.log
+│   ├── train_acc.csv
+│   └── ...
+├── ResultImg # The image of Result. Auto Bulid
+│   ├── 000001_10.png
+│   ├── 000002_10.png
+│   └── ...
+├── PAModel # The saved model. Auto Bulid
+│   ├── checkpoint
+│   └── ...
+├── log # The graph of model. Auto Bulid
+│   ├── events.out.tfevents.1541751559.ubuntu
+│   └── ...
 ├── GetPath.sh
 ├── Pre-Train.sh
-├── TestStart.sh  
+├── TestStart.sh
 ├── TrainStart.sh
 ├── LICENSE
 ├── requirements.txt
-└── README.md               
+└── README.md
 ```
 
 ### Update log
+#### 2020-06-08
+1. Add spn;
+2. Add Refine;
+3. Add the number of disparity;
+4. Refactor the code in the future.
+
+#### 2020-05-30
+1. Add gn;
+2. Add the 3D gn;
+3. Change All bn to gn.
+
+#### 2020-05-08
+1. New project for ROB;
+2. Add middlebury;
+3. ADD ETH3D;
+
+___
+
 #### 2019-10-23 (v1)
 1. Finsih refactoring job;
 2. Add some files and change the Source/JackBasicStructLib

@@ -1,0 +1,15 @@
+/home1/Documents/Database/MiddEval/MiddEval3/trainingH/Adirondack/disp0GT.pfm
+/home1/Documents/Database/MiddEval/MiddEval3/trainingH/Jadeplant/disp0GT.pfm
+/home1/Documents/Database/MiddEval/MiddEval3/trainingH/MotorcycleE/disp0GT.pfm
+/home1/Documents/Database/MiddEval/MiddEval3/trainingH/PianoL/disp0GT.pfm
+/home1/Documents/Database/MiddEval/MiddEval3/trainingH/Playroom/disp0GT.pfm
+/home1/Documents/Database/MiddEval/MiddEval3/trainingH/PlaytableP/disp0GT.pfm
+/home1/Documents/Database/MiddEval/MiddEval3/trainingH/Shelves/disp0GT.pfm
+/home1/Documents/Database/MiddEval/MiddEval3/trainingH/Vintage/disp0GT.pfm
+/home1/Documents/Database/MiddEval/MiddEval3/trainingH/ArtL/disp0GT.pfm
+/home1/Documents/Database/MiddEval/MiddEval3/trainingH/Motorcycle/disp0GT.pfm
+/home1/Documents/Database/MiddEval/MiddEval3/trainingH/Piano/disp0GT.pfm
+/home1/Documents/Database/MiddEval/MiddEval3/trainingH/Pipes/disp0GT.pfm
+/home1/Documents/Database/MiddEval/MiddEval3/trainingH/Playtable/disp0GT.pfm
+/home1/Documents/Database/MiddEval/MiddEval3/trainingH/Recycle/disp0GT.pfm
+/home1/Documents/Database/MiddEval/MiddEval3/trainingH/Teddy/disp0GT.pfm

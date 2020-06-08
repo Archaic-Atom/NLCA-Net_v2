@@ -48,7 +48,7 @@ IMG_DEPTH = 3
 IMAGE_NUM = 20000
 
 # program setting
-IMG_DISPARITY = 192                                     # the image's disparity
+IMG_DISPARITY = 256                                     # the image's disparity
 MAX_STEPS = 500000                                      # the max step
 LEARNING_RATE = 0.001                                   # learin rate
 AUTO_SAVE_NUM = 20                                      # save

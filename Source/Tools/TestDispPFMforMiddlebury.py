@@ -2,6 +2,51 @@
 
 import os
 import glob
+import re
+import numpy as np
+import sys
+from PIL import Image
+import cv2
+
+
+def readPFM(file):
+    file = open(file, 'rb')
+
+    color = None
+    width = None
+    height = None
+    scale = None
+    endian = None
+
+    header = file.readline().rstrip()
+    if header == 'PF':
+        color = True
+    elif header == 'Pf':
+        color = False
+    else:
+        raise Exception('Not a PFM file.')
+
+    dim_match = re.match(r'^(\d+)\s(\d+)\s$', file.readline())
+    if dim_match:
+        width, height = map(int, dim_match.groups())
+    else:
+        raise Exception('Malformed PFM header.')
+
+    scale = float(file.readline().rstrip())
+    if scale < 0:  # little-endian
+        endian = '<'
+        scale = -scale
+    else:
+        endian = '>'  # big-endian
+
+    data = np.fromfile(file, endian + 'f')
+    shape = (height, width, 3) if color else (height, width)
+
+    data = np.reshape(data, shape)
+    data = np.flipud(data)
+    file.close()
+
+    return data, scale
 
 
 def OutputData(outputFile, data):
@@ -9,10 +54,10 @@ def OutputData(outputFile, data):
     outputFile.flush()
 
 
-TrainListPath = './Dataset/trainlist_MiddEval3.txt'
-DispLabelListPath = './Dataset/labellist_disp_MiddEval3.txt'
+TrainListPath = './Dataset/trainlist_MiddEval3_H.txt'
+DispLabelListPath = './Dataset/labellist_disp_MiddEval3_H.txt'
 
-ValTrainListPath = './Dataset/testlist_MiddEval3.txt'
+ValTrainListPath = './Dataset/testlist_MiddEval3_H.txt'
 #ValDispLabelListPath = './Dataset/test_label_disp_list_ETH3D.txt'
 #ValClsLabelListPath = './Dataset/test_label_cls_list_CityScape.txt'
 
@@ -74,6 +119,23 @@ for i in range(len(train_folder_list)):
     OutputData(fd_train_list, path_0)
     OutputData(fd_train_list, path_1)
     OutputData(fd_disp_label_list, path_2)
+
+    disp, _ = readPFM(path_2)
+    disp[np.isinf(disp)] = 0
+
+    tem_disp = disp > 256
+    print np.max(disp)
+    tem_disp = tem_disp.astype(np.int32)
+    tem_disp_1 = np.sum(tem_disp)
+    # print tem_disp_1
+
+    tem_disp = disp > 0
+    tem_disp = tem_disp.astype(np.int32)
+    tem_disp = np.sum(tem_disp)
+    # print tem_disp
+
+    print tem_disp_1 / float(tem_disp)
+
     print "Finish: " + train_folder_list[i]
 
 
