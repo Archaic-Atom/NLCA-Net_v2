@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from JackBasicStructLib.Basic.Define import *
+from ImgHandler import *
 
 
 def RandomOrg(w, h, crop_w, crop_h):
@@ -111,3 +112,24 @@ def TestDataAugmentation(img):
     img4 = np.array(img3)[:, :, ::-1]  # w_ v
     img5 = np.concatenate([img3, img4])
     return img5
+
+
+def StyleDataAugmentation(imgL, imgR, imgRef):
+    flip_prop = np.random.randint(low=0, high=10)
+    if flip_prop <= -2:
+        imgL = StyleTransfer(imgL, imgRef)
+        imgR = StyleTransfer(imgR, imgRef)
+    elif flip_prop <= 10:
+        imgL = RGB2GRAY(imgL)
+        imgR = RGB2GRAY(imgL)
+
+    return imgL, imgR
+
+
+def DispDataAugmentation():
+    flip_prop = np.random.randint(low=0, high=10)
+    d = 0
+    if flip_prop <= 3:
+        d = np.random.randint(low=1, high=20)
+
+    return d

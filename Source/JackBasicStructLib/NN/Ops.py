@@ -235,17 +235,30 @@ def GN(x, group_num):
     with tf.variable_scope('GN'):
         G = group_num
         # tranpose: [bs, h, w, c] to [bs, c, h, w] following the paper
-        x = tf.transpose(x, [0, 3, 1, 2])
-        _, C, H, W = x.get_shape().as_list()
+        len_2D = 4
+        len_3D = 5
+        offset = 1
 
-        G = min(G, C)
-        x = tf.reshape(x, [-1, G, C // G, H, W])
-        mean, var = tf.nn.moments(x, [2, 3, 4], keep_dims=True)
+        if len(x.get_shape()) == len_2D:
+            x = tf.transpose(x, [0, 3, 1, 2])
+            _, C, H, W = x.get_shape().as_list()
+            G = min(G, C)
+            x = tf.reshape(x, [-1, G, C // G, H, W])
+            mean, var = tf.nn.moments(x, [2, 3, 4], keep_dims=True)
+            shape = [1, C, 1, 1]
+        elif len(x.get_shape()) == len_3D:
+            x = tf.transpose(x, [0, 4, 1, 2, 3])
+            _, C, D, H, W = x.get_shape().as_list()
+            G = min(G, C)
+            x = tf.reshape(x, [-1, G, C // G, D, H, W])
+            mean, var = tf.nn.moments(x, [2, 3, 4, 5], keep_dims=True)
+            shape = [1, C, 1, 1, 1]
+
         x = (x - mean) / tf.sqrt(var + GN_EPSILON)
 
         # per channel gamma and beta
         beta = tf.get_variable('beta',
-                               shape=[1, C, 1, 1],
+                               shape=shape,
                                initializer=tf.zeros_initializer(),
                                dtype='float32',
                                collections=[
@@ -253,21 +266,23 @@ def GN(x, group_num):
                                    GC_VARIABLES],
                                trainable=True)
         gamma = tf.get_variable('gamma',
-                                shape=[1, C, 1, 1],
+                                shape=shape,
                                 initializer=tf.ones_initializer(),
                                 dtype='float32',
                                 collections=[
                                     tf.GraphKeys.GLOBAL_VARIABLES,
                                     GC_VARIABLES],
                                 trainable=True)
-        #gamma = tf.Variable(tf.constant(1.0, shape=[C]), dtype=tf.float32, name='gamma')
-        #beta = tf.Variable(tf.constant(0.0, shape=[C]), dtype=tf.float32, name='beta')
-        #gamma = tf.reshape(gamma, [1, C, 1, 1])
-        #beta = tf.reshape(beta, [1, C, 1, 1])
-        output = tf.reshape(x, [-1, C, H, W]) * gamma + beta
 
-        # tranpose: [bs, c, h, w, c] to [bs, h, w, c] following the paper
-        output = tf.transpose(output, [0, 2, 3, 1])
+        if len(x.get_shape()) == (len_2D + offset):
+            output = tf.reshape(x, [-1, C, H, W]) * gamma + beta
+            # tranpose: [bs, c, h, w, c] to [bs, h, w, c] following the paper
+            output = tf.transpose(output, [0, 2, 3, 1])
+        elif len(x.get_shape()) == (len_3D + offset):
+            output = tf.reshape(x, [-1, C, D, H, W]) * gamma + beta
+            # tranpose: [bs, c, h, w, c] to [bs, h, w, c] following the paper
+            output = tf.transpose(output, [0, 2, 3, 4, 1])
+
     return output
 
 

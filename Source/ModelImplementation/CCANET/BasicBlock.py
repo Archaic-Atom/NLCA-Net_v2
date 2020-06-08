@@ -60,27 +60,32 @@ def ExtractCostFeatureBlock(x, training=True):
     return x
 
 
-def BuildCostVolumeBlock(imgL, imgR, disp_num):
+def BuildCostVolumeBlock(imgL, imgR, d):
     with tf.variable_scope("BuildCostVolumeBlock"):
         batchsize, height, width, feature_num = imgL.get_shape().as_list()
-        cost_vol = []
-        for d in xrange(1, disp_num/4 + 1):
-            paddings = [[0, 0], [0, 0], [d, 0], [0, 0]]
-            slice_featuresR = tf.slice(imgR, [0, 0, 0, 0],
-                                       [-1, height, width - d, feature_num])
-            slice_featuresR = tf.pad(slice_featuresR, paddings, "CONSTANT")
-            ave_feature = (imgL + slice_featuresR) / 2
-            ave_feature2 = (tf.square(imgL) + tf.square(slice_featuresR)) / 2
-            cost = ave_feature2 - tf.square(ave_feature)
-            cost_vol.append(cost)
+        paddings = [[0, 0], [0, 0], [d, 0], [0, 0]]
+        slice_featuresR = tf.slice(imgR, [0, 0, 0, 0],
+                                   [-1, height, width - d, feature_num])
+        slice_featuresR = tf.pad(slice_featuresR, paddings, "CONSTANT")
+        ave_feature = (imgL + slice_featuresR) / 2
+        ave_feature2 = (tf.square(imgL) + tf.square(slice_featuresR)) / 2
+        cost = ave_feature2 - tf.square(ave_feature)
+    return cost
 
-        cost_vol = tf.stack(cost_vol, axis=1)
-    return cost_vol
+
+def LearnCostBlock(x, imgL, d, training=True):
+    with tf.variable_scope("LearnCostBlock" + str(d)):
+        w = GCBlock(imgL, "GlobalContext_1", training=training)
+        w = SegAttentionBlock(w, training=training)
+        x = Conv2DLayer(x, 1, 1, 32, "Conv_1", training=training)
+        x = SegAttentionAddBlock(x, w, training=training)
+    return x
 
 
 def MatchingBlock(x, training=True):
     with tf.variable_scope("MatchingBlock"):
-        x = Conv3DLayer(x, 3, 1, 64, "Conv_1", training=training)
+        #x = x
+        x = Conv3DLayer(x, 3, 1, 32, "Conv_1", training=training)
         x = Conv3DLayer(x, 3, 1, 32, "Conv_2", training=training)
         x = Res3DBlock(x, 3, "Res_1", training=training)
     return x

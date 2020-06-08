@@ -1,8 +1,6 @@
 *.pyc
 .idea
-sftp-config.json
-sftp-config-alt.json
-sftp-config-alt2.json
+sftp-config*.json
 *.log
 *.png
 *.zip

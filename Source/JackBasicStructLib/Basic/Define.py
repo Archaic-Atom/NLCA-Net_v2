@@ -8,6 +8,8 @@ import cv2
 import sys
 import re
 import os
+import copy
+import math
 
 from tensorflow.python.ops import control_flow_ops
 from tensorflow.python.training import moving_averages

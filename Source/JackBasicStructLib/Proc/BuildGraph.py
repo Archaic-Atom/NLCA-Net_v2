@@ -49,6 +49,13 @@ class BuildGraph(object):
 
     def RestoreModel(self):
         variables = self.GlobalVariables()
+        variables_to_resotre = [v for v in variables
+                                if ('GN' not in v.name
+                                    # and 'ExtractUnaryFeatureBlock7' not in v.name
+                                    # and 'ExtractUnaryFeatureBlock8' not in v.name
+                                    # and 'ExtractUnaryFeatureBlock9' not in v.name
+                                    # and 'NonLocalGroupBlock' not in v.name
+                                    )]
         self.RestorePartModel(variables)
 
     def RestorePartModel(self, variables_to_resotre):
@@ -60,6 +67,8 @@ class BuildGraph(object):
             Info("Restored model parameters from {}".format(ckpt.model_checkpoint_path))
         else:
             Info('No checkpoint file found.')
+
+        self._sess.graph.finalize()
 
     def TrainRun(self, input, label, training=True):
         feed_dict = self.__GenInterfaceDict(input, label, training)

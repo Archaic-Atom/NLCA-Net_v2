@@ -78,3 +78,57 @@ def WritePFM(file, image, scale=1):
     file.write(image_string)
 
     file.close()
+
+
+def RGB2LAB(img):
+    img = cv2.cvtColor(img, cv2.COLOR_RGB2LAB)
+    img = img.astype(np.float32)
+    img[:, :, 0] = img[:, :, 0] * 100 / 255
+    img[:, :, 1] = img[:, :, 1] - 128
+    img[:, :, 2] = img[:, :, 2] - 128
+    return img
+
+
+def LAB2RGB(img):
+    img[:, :, 0] = img[:, :, 0] * 255 / 100
+    img[:, :, 1] = img[:, :, 1] + 128
+    img[:, :, 2] = img[:, :, 2] + 128
+    img = np.clip(img, 0, 255)
+    img = img.astype(np.uint8)
+    img = cv2.cvtColor(img, cv2.COLOR_LAB2RGB)
+    return img
+
+
+def MeanVar(img):
+    mean = np.mean(img)
+    var = math.sqrt(np.var(img))
+    return mean, var
+
+
+def RGB2GRAY(img):
+    imgG = copy.deepcopy(img)
+    img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+    imgG[:, :, 0] = img
+    imgG[:, :, 1] = img
+    imgG[:, :, 2] = img
+    return imgG
+
+
+def StyleTransfer(imgS, ImgR):
+    imgS_LAB = RGB2LAB(imgS)
+    imgR_LAB = RGB2LAB(ImgR)
+
+    mean_S, var_S = MeanVar(imgS_LAB)
+    # print mean_S, var_S
+
+    mean_R, var_R = MeanVar(imgR_LAB)
+    # print mean_R, var_R
+
+    imgS_LAB = imgS_LAB - mean_S
+    lamda = var_R / var_S
+    imgS_LAB = lamda * imgS_LAB
+    imgS_LAB = imgS_LAB + mean_R
+
+    imgS_RGB = LAB2RGB(imgS_LAB)
+
+    return imgS_RGB

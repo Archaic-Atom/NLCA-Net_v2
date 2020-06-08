@@ -29,6 +29,7 @@ def ParseArgs():
     parser.add_argument('--valLabelListPath', default=LABEL_LIST_PATH, help='val list Path')
     parser.add_argument('--testListPath', default=TRAIN_LIST_PATH, help='val list path')
     parser.add_argument('--testLabelListPath', default=LABEL_LIST_PATH, help='val list Path')
+    parser.add_argument('--styleListPath', default=LABEL_LIST_PATH, help='style list Path')
 
     # output path
     parser.add_argument('--outputDir', default=OUTPUT_PATH,
@@ -47,6 +48,8 @@ def ParseArgs():
                         type=int, help="The img's num, training and testing")
     parser.add_argument('--valImgNum', default=IMAGE_NUM,
                         type=int, help="The img's num, val num")
+    parser.add_argument('--styleImgNum', default=IMAGE_NUM,
+                        type=int, help="The img's num, val num")
     parser.add_argument('--maxEpochs', default=MAX_STEPS,
                         type=int, help="Max step. e.g. 500")
     parser.add_argument('--gpu', type=int, default=GPU_NUM,
@@ -60,6 +63,8 @@ def ParseArgs():
     parser.add_argument('--pretrain', default=False,
                         type=Str2Bool, help='true or false')
     parser.add_argument('--modelName', default='NLCANet', help='model name')
+    parser.add_argument('--styleTransfer', default=False,
+                        type=Str2Bool, help='true or false')
 
     # the image's size
     parser.add_argument('--corpedImgWidth', default=IMAGE_WIDTH, type=int,
