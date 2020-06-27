@@ -62,7 +62,7 @@ class ExtractUnaryFeatureModule(object):
     def __ExtractUnaryFeatureBlock5(self, x, training=True):
         with tf.variable_scope("ExtractUnaryFeatureBlock5"):
             x = Conv2DLayer(x, 3, 1, 128, "Conv_1", training=training)
-            x = Conv2DLayer(x, 3, 1, 32, "Conv_2", biased=True,
+            x = Conv2DLayer(x, 3, 1, 64, "Conv_2", biased=True,
                             bn=False, relu=False, training=training)
         return x
 
@@ -82,8 +82,7 @@ class BuildCostVolumeModule(object):
     def __BuildCostVolumeBlock(self, imgL, imgR, disp_num):
         with tf.variable_scope("BuildCostVolumeBlock"):
             batchsize, height, width, feature_num = imgL.get_shape().as_list()
-            val_cost_vol = []
-            concat_cost_vol = []
+            cost_vol = []
             for d in xrange(1, int(disp_num/4) + 1):
                 paddings = [[0, 0], [0, 0], [d, 0], [0, 0]]
                 slice_featuresR = tf.slice(imgR, [0, 0, 0, 0],
@@ -92,13 +91,9 @@ class BuildCostVolumeModule(object):
                 ave_feature = tf.add(imgL, slice_featuresR) / 2
                 ave_feature2 = tf.add(tf.square(imgL), tf.square(slice_featuresR)) / 2
                 cost = ave_feature2 - tf.square(ave_feature)
-                val_cost_vol.append(cost)
-                cost = tf.concat([imgL, slice_featuresR], axis=3)
-                concat_cost_vol.append(cost)
+                cost_vol.append(cost)
 
-            val_cost_vol = tf.stack(val_cost_vol, axis=1)
-            concat_cost_vol = tf.stack(concat_cost_vol, axis=1)
-            cost_vol = tf.concat([val_cost_vol, concat_cost_vol], axis=4)
+            cost_vol = tf.stack(cost_vol, axis=1)
         return cost_vol
 
 
@@ -312,5 +307,4 @@ class FusionModule(object):
             x = Conv2DLayer(x, 3, 1, 1, "Conv_2", biased=True,
                             relu=False, bn=False, training=training)
             x = tf.squeeze(x, axis=3)
-        return x.squeeze(x, axis=3)
         return x

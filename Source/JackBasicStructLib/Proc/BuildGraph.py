@@ -50,9 +50,9 @@ class BuildGraph(object):
     def RestoreModel(self):
         variables = self.GlobalVariables()
         variables_to_resotre = [v for v in variables
-                                if ('GN' not in v.name
-                                    # and 'ExtractUnaryFeatureBlock7' not in v.name
-                                    # and 'ExtractUnaryFeatureBlock8' not in v.name
+                                if ('BN' not in v.name
+                                    # and 'MatchingBlock/Conv_1' not in v.name
+                                    # and 'FusionModule' not in v.name
                                     # and 'ExtractUnaryFeatureBlock9' not in v.name
                                     # and 'NonLocalGroupBlock' not in v.name
                                     )]

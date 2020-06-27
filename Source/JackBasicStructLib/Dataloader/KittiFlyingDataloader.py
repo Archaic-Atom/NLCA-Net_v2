@@ -100,16 +100,19 @@ class KittiFlyingDataloader(object):
             imgRef = ReadImg(pathStyle)
             imgL, imgR = StyleDataAugmentation(imgL, imgR, imgRef)
 
-        d = DispDataAugmentation()
+        #d = DispDataAugmentation()
+        #d = 0
 
         # random crop
-        x, y = RandomOrg(imgL.shape[1], imgL.shape[0], w + d, h)
+        #x, y = RandomOrg(imgL.shape[1], imgL.shape[0], w + d, h)
+        x, y = RandomOrg(imgL.shape[1], imgL.shape[0], w, h)
         imgL = ImgSlice(imgL, x, y, w, h)
         imgL = Standardization(imgL)
         imgL = np.expand_dims(imgL, axis=0)
 
         # the right img
-        imgR = ImgSlice(imgR, x + d, y, w, h)
+        #imgR = ImgSlice(imgR, x + d, y, w, h)
+        imgR = ImgSlice(imgR, x, y, w, h)
         imgR = Standardization(imgR)
         imgR = np.expand_dims(imgR, axis=0)
 
@@ -121,9 +124,9 @@ class KittiFlyingDataloader(object):
         else:
             imgGround = self.__ReadRandomPfmGroundTrue(pathGround, x, y, w, h)
 
-        mask = imgGround > 0
-        mask = mask.astype(np.float32)
-        imgGround = mask * (imgGround + d)
+        #mask = imgGround > 0
+        #mask = mask.astype(np.float32)
+        #imgGround = mask * (imgGround + d)
 
         return imgL, imgR, imgGround
 

@@ -4,6 +4,7 @@ from Basic.LogHandler import *
 from Basic.Define import *
 from JackBasicStructLib.Basic.Paras import *
 from NLCANet.Model import NLCANet as nlca
+from NLCANet_gn_spn.Model import NLCANet as nlca_v2
 from CCANET.Model import CCANet as cca
 from NLCANet.Dataloader import *
 
@@ -29,7 +30,7 @@ class NetWorkInference(object):
             if case('NLCANet'):
                 Info("Begin loading NLCA_Net Model")
                 paras = Args2Paras(args, is_training)
-                model = nlca(args, is_training)
+                model = nlca_v2(args, is_training)
                 dataHandler = DataHandler(args)
                 break
             if case('CCANet'):

@@ -1,8 +1,8 @@
 #!/bin/bash
 echo $"Starting Net..."
-CUDA_VISIBLE_DEVICES=0 nohup python -u ./Source/main.py \
+CUDA_VISIBLE_DEVICES=2 nohup python -u ./Source/main.py \
                        --gpu 1 --phase test \
-                       --modelDir ./PAModel/ \
+                       --modelDir ./PAModel_ROB/ \
                        --imgNum 200 \
                        --outputDir ./TestResult/ \
                        --resultImgDir ./ResultImg/ \

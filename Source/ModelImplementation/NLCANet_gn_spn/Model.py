@@ -76,7 +76,7 @@ class NLCANet(ModelTemplate):
         loss_3 = MAE_Loss(output[self.output_coarse_img_id], label[self.label_disp_id])
         loss_4 = MAE_Loss(output[self.output_cspn_img_id], label[self.label_disp_id])
         loss_5 = MAE_Loss(output[self.output_refine_img_id], label[self.label_disp_id])
-        total_loss = loss_2 + loss_1
+        total_loss = loss_2 + loss_1 + loss_0
         loss.append(total_loss)
         loss.append(loss_3)
         loss.append(loss_4)
