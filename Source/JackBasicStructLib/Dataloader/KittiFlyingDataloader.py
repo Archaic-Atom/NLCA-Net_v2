@@ -11,6 +11,8 @@ DEPTH_DIVIDING = 256.0
 class KittiFlyingDataloader(object):
     def __init__(self):
         super(KittiFlyingDataloader, self).__init__()
+        self.imgL = None
+        self.imgR = None
         pass
 
     def SaveTestData(self, args, img, num):
@@ -76,7 +78,7 @@ class KittiFlyingDataloader(object):
         # flying thing groundtrue
         imgGround, _ = ReadPFM(path)
         imgGround = ImgGroundSlice(imgGround, x, y, w, h)
-        imgGround = np.expand_dims(imgGround, axis=0)
+        #imgGround = np.expand_dims(imgGround, axis=0)
         return imgGround
 
     def __ReadRandomGroundTrue(self, path, x, y, w, h):
@@ -84,7 +86,7 @@ class KittiFlyingDataloader(object):
         img = Image.open(path)
         imgGround = np.ascontiguousarray(img, dtype=np.float32)/float(DEPTH_DIVIDING)
         imgGround = ImgGroundSlice(imgGround, x, y, w, h)
-        imgGround = np.expand_dims(imgGround, axis=0)
+        #imgGround = np.expand_dims(imgGround, axis=0)
         return imgGround
 
     def __ReadData(self, args, pathL, pathR, pathGround, pathStyle=None):
@@ -100,21 +102,19 @@ class KittiFlyingDataloader(object):
             imgRef = ReadImg(pathStyle)
             imgL, imgR = StyleDataAugmentation(imgL, imgR, imgRef)
 
-        #d = DispDataAugmentation()
+        d = DispDataAugmentation()
         #d = 0
 
         # random crop
-        #x, y = RandomOrg(imgL.shape[1], imgL.shape[0], w + d, h)
-        x, y = RandomOrg(imgL.shape[1], imgL.shape[0], w, h)
+        x, y = RandomOrg(imgL.shape[1], imgL.shape[0], w + d, h)
+        #x, y = RandomOrg(imgL.shape[1], imgL.shape[0], w, h)
         imgL = ImgSlice(imgL, x, y, w, h)
         imgL = Standardization(imgL)
-        imgL = np.expand_dims(imgL, axis=0)
 
         # the right img
-        #imgR = ImgSlice(imgR, x + d, y, w, h)
-        imgR = ImgSlice(imgR, x, y, w, h)
+        imgR = ImgSlice(imgR, x + d, y, w, h)
+        #imgR = ImgSlice(imgR, x, y, w, h)
         imgR = Standardization(imgR)
-        imgR = np.expand_dims(imgR, axis=0)
 
         file_type = os.path.splitext(pathGround)[-1]
 
@@ -124,9 +124,16 @@ class KittiFlyingDataloader(object):
         else:
             imgGround = self.__ReadRandomPfmGroundTrue(pathGround, x, y, w, h)
 
-        #mask = imgGround > 0
-        #mask = mask.astype(np.float32)
-        #imgGround = mask * (imgGround + d)
+        mask = imgGround > 0
+        mask = mask.astype(np.float32)
+        imgGround = mask * (imgGround + d)
+
+        # imgL, imgR, imgGround, _ = VerticalFlip(
+        #    imgL, imgR, imgGround, None)
+
+        imgL = np.expand_dims(imgL, axis=0)
+        imgR = np.expand_dims(imgR, axis=0)
+        imgGround = np.expand_dims(imgGround, axis=0)
 
         return imgL, imgR, imgGround
 

@@ -1,22 +1,22 @@
 #!/bin/bash
 echo $"Starting Net..."
-CUDA_VISIBLE_DEVICES=0 nohup python -u ./Source/main.py \
-                       --gpu 1 --phase train \
+CUDA_VISIBLE_DEVICES=0,1,5,4 nohup python -u ./Source/main.py \
+                       --gpu 4 --phase train \
                        --dataset FlyingThing \
-                       --modelDir ./PAModel/ \
+                       --modelDir ./PAModel_ROB/ \
                        --auto_save_num 1 \
                        --imgNum 35454 \
                        --valImgNum 0 \
                        --maxEpochs 50 \
                        --styleImgNum 952 \
-                       --learningRate 0.001 \
+                       --learningRate 0.00001 \
                        --outputDir ./Result/ \
                        --trainListPath ./Dataset/trainlist_scene_flow.txt \
                        --trainLabelListPath ./Dataset/label_scene_flow.txt \
                        --valListPath ./Dataset/val_trainlist_kitti_2015.txt \
                        --valLabelListPath ./Dataset/val_labellist_kitti_2015.txt \
                        --styleListPath ./Dataset/style_list.txt \
-                       --styleTransfer true \
+                       --styleTransfer false \
                        --batchSize 1 \
                        --pretrain false > PreTrainRun.log 2>&1 &
 echo $"You can get the running log via the command line that tail -f PreTrainRun.log"

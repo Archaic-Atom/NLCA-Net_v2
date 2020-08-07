@@ -1,15 +1,16 @@
 #!/bin/bash
 echo $"Starting Net..."
-CUDA_VISIBLE_DEVICES=0,2 nohup python -u ./Source/main.py \
-                       --gpu 2 --phase test \
+CUDA_VISIBLE_DEVICES=2 nohup python -u ./Source/main.py \
+                       --gpu 1 --phase test \
+					   --dataset ETH3D \
                        --modelDir ./PAModel_ROB/ \
-                       --padedImgWidth 960 \
-                       --padedImgHeight 576 \
-                       --imgNum 4370 \
+                       --imgNum 47 \
                        --outputDir ./TestResult/ \
                        --resultImgDir ./ResultImg/ \
-                       --testListPath ./Dataset/testlist_scene_flow.txt \
-                       --batchSize 1 \
+                       --testListPath ./Dataset/testlist_ETH3D.txt \
+                       --padedImgWidth 960 \
+                       --padedImgHeight 576 \
+					   --batchSize 1 \
                        --pretrain false > TestRun.log 2>&1 &
 echo $"You can get the running log via the command line that tail -f TestRun.log"
 echo $"The result will be saved in the result folder"

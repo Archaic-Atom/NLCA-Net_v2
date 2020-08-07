@@ -3,7 +3,8 @@ from Basic.LogHandler import *
 from JackBasicStructLib.Model.Template.DataHandlerTemplate import DataHandlerTemplate
 from JackBasicStructLib.FileProc.FileHandler import *
 from JackBasicStructLib.Dataloader.KittiFlyingDataloader import KittiFlyingDataloader as kfd
-
+from JackBasicStructLib.ImgProc.ImgHandler import *
+import time
 import cv2
 import numpy as np
 
@@ -35,36 +36,39 @@ class DataHandler(DataHandlerTemplate):
         return input, label
 
     def GetTestingData(self, paras, testList, num):
-        imgLs, imgRs, top_pads, left_pads = self.kfd.GetBatchTestImage(
+        imgLs, imgRs, top_pads, left_pads, names = self.kfd.GetBatchTestImage(
             self.__args, testList, num, True)
         input, _ = self.__CreateRes(imgLs, imgRs, None)
-        supplement = self.__CreateSupplement(top_pads, left_pads)
+        supplement = self.__CreateSupplement(top_pads, left_pads, names)
+        self.start_time = time.time()
         return input, supplement
 
     def ShowTrainingResult(self, epoch, loss, acc, duration):
         format_str = ('[TrainProcess] epochs = %d ,loss = %.6f, ' +
-                      'coarse_disp_loss = %.6f, refine_disp_loss = %.6f, ' +
-                      'coarse_acc = %.6f, refine_acc = %.6f (%.3f sec/batch)')
-        Info(format_str % (epoch, loss[0], loss[1], loss[2],
-                           acc[0], acc[1], duration))
+                      'coarse_disp_loss = %.6f, cspn_disp_loss = %.6f, ' +
+                      'refine_disp_loss = %.6f, coarse_acc = %.6f, ' +
+                      'cspn_acc = %.6f, refine_acc = %.6f (%.3f sec/batch)')
+        Info(format_str % (epoch, loss[0], loss[1], loss[2], loss[3],
+                           acc[0], acc[1], acc[2], duration))
         OutputData(self.fd_train_acc, loss[0])
         OutputData(self.fd_train_loss, acc[1])
 
     def ShowValResult(self, epoch, loss, acc, duration):
         format_str = ('[ValProcess] epochs = %d ,loss = %.6f, ' +
-                      'coarse_disp_loss = %.6f, refine_disp_loss = %.6f, ' +
-                      'coarse_acc = %.6f, refine_acc = %.6f (%.3f sec/batch)')
-        Info(format_str % (epoch, loss[0], loss[1], loss[2],
-                           acc[0], acc[1], duration))
+                      'coarse_disp_loss = %.6f, cspn_disp_loss = %.6f, ' +
+                      'refine_disp_loss = %.6f, coarse_acc = %.6f, ' +
+                      'cspn_acc = %.6f, refine_acc = %.6f (%.3f sec/batch)')
+        Info(format_str % (epoch, loss[0], loss[1], loss[2], loss[3],
+                           acc[0], acc[1], acc[2], duration))
         OutputData(self.fd_val_acc, loss[0])
         OutputData(self.fd_val_loss, acc[1])
 
     def ShowIntermediateResult(self, epoch, loss, acc):
-        format_str = ('epochs: %d, loss: %.6f, ' +
-                      'coarse_disp_loss: %.6f, refine_disp_loss: %.6f, ' +
-                      'coarse_acc: %.6f, refine_acc: %.6f')
-        info_str = format_str % (epoch, loss[0], loss[1], loss[2],
-                                 acc[0], acc[1])
+        format_str = ('e: %d, l: %.3f, ' +
+                      'l0: %.3f, l1: %.3f, l2: %.3f, ' +
+                      'a0: %.3f, a1: %.3f, a2: %.3f')
+        info_str = format_str % (epoch, loss[0], loss[1], loss[2], loss[3],
+                                 acc[0], acc[1], acc[2])
         return info_str
 
     def SaveResult(self, output, supplement, imgID, testNum):
@@ -72,15 +76,49 @@ class DataHandler(DataHandlerTemplate):
         res = np.array(output)
         top_pads = supplement[0]
         left_pads = supplement[1]
+        names = supplement[2]
+        ttimes = time.time() - self.start_time
 
         for i in range(args.gpu):
             for j in range(args.batchSize):
-                temRes = res[i, 1, j, :, :]
-                temRes = temRes[top_pads[i*args.batchSize+j]:, :-left_pads[i*args.batchSize+j]]
-                self.kfd.SaveTestData(args, temRes, args.gpu*args.batchSize *
-                                      imgID + i*args.batchSize + j)
-                Info('[TestProcess] Finish ' +
-                     str(args.gpu * args.batchSize*imgID + i*args.batchSize + j) + ' image.')
+                temRes = res[i, 2, j, :, :]
+
+                top_pad = top_pads[i*args.batchSize+j]
+                left_pad = left_pads[i*args.batchSize+j]
+
+                if top_pad > 0 and left_pad > 0:
+                    temRes = temRes[top_pad:, : -left_pad]
+                elif top_pad > 0:
+                    temRes = temRes[top_pad:, :]
+                elif left_pad > 0:
+                    temRes = temRes[:, :-left_pad]
+
+                if args.dataset == "KITTI":
+                    self.kfd.SaveTestData(args, temRes, args.gpu*args.batchSize *
+                                          imgID + i*args.batchSize + j)
+                elif args.dataset == "ETH3D":
+                    name = names[i*args.batchSize+j]
+                    path = args.resultImgDir + name + '.pfm'
+                    WritePFM(path, temRes)
+
+                    path = args.resultImgDir + name + '.txt'
+                    with open(path, 'w') as f:
+                        f.write("runtime "+str(ttimes))
+                elif args.dataset == "Middlebury":
+                    name = names[i*args.batchSize+j]
+                    folder_name = args.resultImgDir + name + '/'
+                    Mkdir(folder_name)
+                    method_name = "disp0NLCA_NET_v2_RVC.pfm"
+                    path = folder_name + method_name
+                    WritePFM(path, temRes)
+
+                    time_name = "timeNLCA_NET_v2_RVC.txt"
+                    path = folder_name + time_name
+                    with open(path, 'w') as f:
+                        f.write(str(ttimes))
+
+                    # Info('[TestProcess] Finish ' +
+                    #     str(args.gpu * args.batchSize*imgID + i*args.batchSize + j) + ' image.')
 
     def __CreateRes(self, imgLs, imgRs, imgGrounds):
         input = []
@@ -90,10 +128,11 @@ class DataHandler(DataHandlerTemplate):
         label.append(imgGrounds)
         return input, label
 
-    def __CreateSupplement(self, top_pads, left_pads):
+    def __CreateSupplement(self, top_pads, left_pads, names):
         supplement = []
         supplement.append(top_pads)
         supplement.append(left_pads)
+        supplement.append(names)
         return supplement
 
     def __CreateResultFile(self, args):

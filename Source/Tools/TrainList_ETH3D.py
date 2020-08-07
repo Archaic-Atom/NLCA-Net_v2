@@ -4,23 +4,33 @@ import os
 import glob
 
 
+from PIL import Image
+import numpy as np
+
+
 def OutputData(outputFile, data):
     outputFile.write(str(data) + '\n')
     outputFile.flush()
+
+
+def ReadImg(path):
+    img = Image.open(path).convert("RGB")
+    img = np.array(img)
+    return img
 
 
 TrainListPath = './Dataset/trainlist_ETH3D.txt'
 DispLabelListPath = './Dataset/labellist_disp_ETH3D.txt'
 
 ValTrainListPath = './Dataset/testlist_ETH3D.txt'
-#ValDispLabelListPath = './Dataset/test_label_disp_list_ETH3D.txt'
-#ValClsLabelListPath = './Dataset/test_label_cls_list_CityScape.txt'
+# ValDispLabelListPath = './Dataset/test_label_disp_list_ETH3D.txt'
+# ValClsLabelListPath = './Dataset/test_label_cls_list_CityScape.txt'
 
 
 RootPath = '/home1/Documents/Database/ETH3D_Stereo/'
 
 
-#cls_folder_list = ['leftImg8bit/', 'rightImg8bit/', 'gtCoarse/', 'disparity/']
+# cls_folder_list = ['leftImg8bit/', 'rightImg8bit/', 'gtCoarse/', 'disparity/']
 
 
 train_folder_list = ['TRAIN/delivery_area_1l', 'TRAIN/delivery_area_1s',
@@ -62,6 +72,12 @@ fd_train_list = open(TrainListPath, 'a')
 fd_disp_label_list = open(DispLabelListPath, 'a')
 fd_val_train_list = open(ValTrainListPath, 'a')
 
+#fd_train_list = None
+#fd_disp_label_list = None
+#fd_val_train_list = None
+
+img_h = 9999999
+img_w = 9999999
 
 for i in range(len(train_folder_list)):
     path = RootPath + train_folder_list[i]
@@ -83,11 +99,22 @@ for i in range(len(train_folder_list)):
         print '***************'
         break
 
+    img = ReadImg(path_0)
+    print img.shape
+
+    if img.shape[0] < img_h:
+        img_h = img.shape[0]
+
+    if img.shape[1] < img_w:
+        img_w = img.shape[1]
+
     OutputData(fd_train_list, path_0)
     OutputData(fd_train_list, path_1)
     OutputData(fd_disp_label_list, path_2)
     print "Finish: " + train_folder_list[i]
 
+
+print img_h, img_w
 
 for i in range(len(val_folder_list)):
     path = RootPath + val_folder_list[i]

@@ -50,9 +50,9 @@ class BuildGraph(object):
     def RestoreModel(self):
         variables = self.GlobalVariables()
         variables_to_resotre = [v for v in variables
-                                if ('BN' not in v.name
-                                    # and 'MatchingBlock/Conv_1' not in v.name
-                                    # and 'FusionModule' not in v.name
+                                if ('BuildCostVolume/FusionFeatureBlock' not in v.name
+                                    and 'MatchingBlock/Conv_1' not in v.name
+                                    and 'NonLocalGroupBlock' not in v.name
                                     # and 'ExtractUnaryFeatureBlock9' not in v.name
                                     # and 'NonLocalGroupBlock' not in v.name
                                     )]
@@ -198,8 +198,8 @@ class BuildGraph(object):
         if training == True:
             train_step = self.__Optimizer(opt, tower_grads, global_step)
             tower_loss, tower_acc = self.__CalculateEvaluationStandard(tower_loss, tower_acc)
-            #tower_loss = tower_loss[0]
-            #tower_acc = tower_acc[0]
+            # tower_loss = tower_loss[0]
+            # tower_acc = tower_acc[0]
         else:
             train_step = None
             tower_loss = None

@@ -19,8 +19,8 @@ class LoadWoker(object):
         self._trainQueue = Queue.Queue(maxsize=30)
         self._valQueue = Queue.Queue(maxsize=30)
         self._exitFlag = 0
-        self._num_tr_batch = paras.imgNum / paras.batchsize / paras.gpu
-        self._num_val_batch = paras.valImgNum / paras.batchsize / paras.gpu
+        self._num_tr_batch = int(paras.imgNum / paras.batchsize / paras.gpu)
+        self._num_val_batch = int(paras.valImgNum / paras.batchsize / paras.gpu)
         if paras.training == False:
             self._num_val_batch = 0
 

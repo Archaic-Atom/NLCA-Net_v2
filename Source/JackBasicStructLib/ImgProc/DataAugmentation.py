@@ -16,8 +16,9 @@ def VerticalFlip(imgL, imgR, disp_gt, cls_gt):
         imgL = cv2.flip(imgL, 0)
         imgR = cv2.flip(imgR, 0)
         disp_gt = cv2.flip(disp_gt, 0)
-        cls_gt = cv2.flip(cls_gt, 0)
+        #cls_gt = cv2.flip(cls_gt, 0)
 
+    cls_gt = None
     return imgL, imgR, disp_gt, cls_gt
 
 

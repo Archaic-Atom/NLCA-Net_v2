@@ -1,14 +1,12 @@
 #!/bin/bash
 echo $"Starting Net..."
-CUDA_VISIBLE_DEVICES=0,2 nohup python -u ./Source/main.py \
-                       --gpu 2 --phase test \
-                       --modelDir ./PAModel_ROB/ \
-                       --padedImgWidth 960 \
-                       --padedImgHeight 576 \
-                       --imgNum 4370 \
+CUDA_VISIBLE_DEVICES=4 nohup python -u ./Source/main.py \
+                       --gpu 1 --phase test \
+                       --modelDir ./PAModel_ROB_cat_val_gn_mnl_5_3_0_800_200_100_2012/ \
+                       --imgNum 195 \
                        --outputDir ./TestResult/ \
                        --resultImgDir ./ResultImg/ \
-                       --testListPath ./Dataset/testlist_scene_flow.txt \
+                       --testListPath ./Dataset/testlist_kitti_2012.txt \
                        --batchSize 1 \
                        --pretrain false > TestRun.log 2>&1 &
 echo $"You can get the running log via the command line that tail -f TestRun.log"
