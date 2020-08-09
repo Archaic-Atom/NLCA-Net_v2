@@ -154,7 +154,11 @@ class BuildGraph(object):
         if training == True:
             acc = model.Accuary(output, label)
             loss = model.Loss(output, label)
-            grads = opt.compute_gradients(loss[0])
+            grads = []
+            var_list = model.OptimizerVarList()
+            for i in range(len(opt)):
+                grad = opt[i].compute_gradients(loss[i], var_list[i])
+                grads.append(grad)
         else:
             acc = None
             loss = None
@@ -168,17 +172,35 @@ class BuildGraph(object):
 
                 tem_input, tem_label = self.__SeparateData(input, label, paras, num, training)
                 output = model.Inference(tem_input, True)
-                grads, loss, acc = self.__GenTrainingData(model, output, tem_label, opt, training)
+                grads, loss, acc = self.__GenTrainingData(
+                    model, output, tem_label, opt, training)
 
                 tf.get_variable_scope().reuse_variables()
 
                 Info("Finished init the gpus %d" % num)
         return output, grads, loss, acc
 
+    def __ReconstructGrad(self, tower_grads):
+        gpus_num = len(tower_grads)
+        loss_num = len(tower_grads[0])
+        tem_tower_grads = []
+
+        for j in range(loss_num):
+            grads = []
+            for i in range(gpus_num):
+                grads.append(tower_grads[i][j])
+            tem_tower_grads.append(grads)
+
+        return tem_tower_grads
+
     def __Optimizer(self, opt, tower_grads, global_step):
-        grads = AverageGradients(tower_grads)
-        train_step = opt.apply_gradients(grads, global_step=global_step)
-        return train_step
+        tower_grads = self.__ReconstructGrad(tower_grads)
+        train_steps = []
+        for i in range(len(opt)):
+            grads = AverageGradients(tower_grads[i])
+            train_step = opt[i].apply_gradients(grads, global_step=global_step)
+            train_steps.append(train_step)
+        return train_steps
 
     def __CalculateEvaluationStandard(self, tower_loss, tower_acc):
         tower_loss = ListMean(tower_loss)

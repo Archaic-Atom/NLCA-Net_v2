@@ -15,10 +15,40 @@ class KittiFlyingDataloader(object):
         self.imgR = None
         pass
 
-    def SaveTestData(self, args, img, num):
+    def SaveKITTITestData(self, args, img, num):
         path = self.__GenerateOutImgPath(args.resultImgDir, args.saveFormat, args.imgType, num)
         img = self.__DepthToImgArray(img)
         self.__SavePngImg(path, img)
+
+    def SaveETH3DTestData(self, args, img, name, ttimes):
+        path = args.resultImgDir + name + '.pfm'
+        WritePFM(path, img)
+        path = args.resultImgDir + name + '.txt'
+        with open(path, 'w') as f:
+            f.write("runtime "+str(ttimes))
+            f.close()
+
+    def SaveMiddleburyTestData(self, args, img, name, ttimes):
+        folder_name = args.resultImgDir + name + '/'
+        Mkdir(folder_name)
+        method_name = "disp0NLCA_NET_v2_RVC.pfm"
+        path = folder_name + method_name
+        WritePFM(path, temRes)
+
+        time_name = "timeNLCA_NET_v2_RVC.txt"
+        path = folder_name + time_name
+        with open(path, 'w') as f:
+            f.write(str(ttimes))
+            f.close()
+
+    def CropTestImg(self, img, top_pad, left_pad):
+        if top_pad > 0 and left_pad > 0:
+            img = img[top_pad:, : -left_pad]
+        elif top_pad > 0:
+            img = img[top_pad:, :]
+        elif left_pad > 0:
+            img = img[:, :-left_pad]
+        return img
 
     def GetBatchImage(self, args, randomlist, num, isVal=False):
         for i in xrange(args.batchSize * args.gpu):
@@ -78,7 +108,7 @@ class KittiFlyingDataloader(object):
         # flying thing groundtrue
         imgGround, _ = ReadPFM(path)
         imgGround = ImgGroundSlice(imgGround, x, y, w, h)
-        #imgGround = np.expand_dims(imgGround, axis=0)
+        # imgGround = np.expand_dims(imgGround, axis=0)
         return imgGround
 
     def __ReadRandomGroundTrue(self, path, x, y, w, h):
@@ -86,7 +116,7 @@ class KittiFlyingDataloader(object):
         img = Image.open(path)
         imgGround = np.ascontiguousarray(img, dtype=np.float32)/float(DEPTH_DIVIDING)
         imgGround = ImgGroundSlice(imgGround, x, y, w, h)
-        #imgGround = np.expand_dims(imgGround, axis=0)
+        # imgGround = np.expand_dims(imgGround, axis=0)
         return imgGround
 
     def __ReadData(self, args, pathL, pathR, pathGround, pathStyle=None):
@@ -103,17 +133,17 @@ class KittiFlyingDataloader(object):
             imgL, imgR = StyleDataAugmentation(imgL, imgR, imgRef)
 
         d = DispDataAugmentation()
-        #d = 0
+        # d = 0
 
         # random crop
         x, y = RandomOrg(imgL.shape[1], imgL.shape[0], w + d, h)
-        #x, y = RandomOrg(imgL.shape[1], imgL.shape[0], w, h)
+        # x, y = RandomOrg(imgL.shape[1], imgL.shape[0], w, h)
         imgL = ImgSlice(imgL, x, y, w, h)
         imgL = Standardization(imgL)
 
         # the right img
         imgR = ImgSlice(imgR, x + d, y, w, h)
-        #imgR = ImgSlice(imgR, x, y, w, h)
+        # imgR = ImgSlice(imgR, x, y, w, h)
         imgR = Standardization(imgR)
 
         file_type = os.path.splitext(pathGround)[-1]
@@ -170,6 +200,7 @@ class KittiFlyingDataloader(object):
         imgL = ReadImg(pathL)
         imgL = Standardization(imgL)
         imgL = np.expand_dims(imgL, axis=0)
+
         imgR = ReadImg(pathR)
         imgR = Standardization(imgR)
         imgR = np.expand_dims(imgR, axis=0)

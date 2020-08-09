@@ -53,7 +53,20 @@ class NLCANet(ModelTemplate):
     def Optimizer(self, lr):
         opt = tf.train.AdamOptimizer(learning_rate=lr)
         #opt = AdaBoundOptimizer(learning_rate=lr, final_lr=100 * lr)
-        return opt
+        return [opt]
+
+    def OptimizerVarList(self):
+        var_list = (tf.trainable_variables()
+                    + tf.get_collection(tf.GraphKeys.TRAINABLE_RESOURCE_VARIABLES))
+        assert set(var_list) == set(tf.trainable_variables())
+        # print set(var_list)
+        # print set(tf.trainable_variables())
+        # var_list = [var for var in var_list if var.name.startswith('NLCANet')]
+        # print set(var_list)
+        # var_list = [var_list]
+
+        var_list = [None]
+        return var_list
 
     def Accuary(self, output, label):
         acc = []

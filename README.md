@@ -1,47 +1,65 @@
->This is the project of the StereoMatching Project. This project based on my framework (if you want to use it to build the Network, you can find it in my website: [fadeshine](http://www.fadeshine.com/). If you have any questions, you can send an e-mail to me. My e-mail: raoxi36@foxmail.com)
+>This is the project of the StereoMatching Project. This project based on my framework (if you want to use it to build the Network, you can find it on my website: [fadeshine](http://www.fadeshine.com/). If you have any questions, you can send an e-mail to me. My e-mail: raoxi36@foxmail.com)
 
 ### Software Environment
 1. OS Environment
 os == linux 16.04
-cudaToolKit == 9.0
-cudnn == 7.3.0
+cudaToolKit == 10.1
+cudnn == 7.3.6
 2. Python Environment
-python == 2.7.15
-tensorflow == 1.9.0
+python == 2.7.18
+tensorflow == 1.12.0
 numpy == 1.14.5
 opencv == 3.4.0
 PIL == 5.1.0
 
 ### Hardware Environment
-- GPU: 1080TI * 4 or other memory at least 11G.(Batch size: 2)
+- GPU: 1080TI * 4 or other memory at least 11G.(Batch size: 1)
 if you not have four gpus, you could change the para of model. The Minimum hardware requirement:
 - GPU: memory at least 5G. (Batch size: 1)
 
 ### Train the model by running:
-1. Get the Training list or Testing list
+1. Get the Training list or Testing list （You need rewrite the code by your path, and my related code can be found in Source/Tools）
 ```
-./GenPath.sh
+$ ./GenPath.sh
 ```
 Please check the path. The source code in Source/Tools.
 
-2. Run the pre-training.sh
+2. Run the pre-training.sh (This is pre-training process. We will provide the pre-trained model at BaiduYun or Google Driver)
 ```
-./Pre-Train.sh
+$ ./Pre-Train.sh
 ```
+Please carefully check the path in related file.
 
-3. Run the trainstart.sh
+3. Run the trainstart.sh (This is fine-tuing process.bg means background running. note that please check the img path should be found in related path, e.g. ./Dataset/trainlist_ETH3D.txt)
 ```
-./TrainStart.sh
+$ ./TrainKitti_2012_bg.sh
+or
+$ ./TrainKitti_2015_bg.sh
+or
+$ ./TrainKitti_ROB_bg.sh
 ```
+Please carefully check the path in related file.
 
-4. Run the teststart.sh
+4. Run the teststart.sh ()
 ```
-$ ./TestStart.sh
+$ ./TestKitti2012.sh
+or 
+$ ./TestKitti2015.sh
+or 
+$ ./TestETH3D.sh
+or 
+$ ./TestMiddle_test.sh (for test data)
+or
+$ ./TestMiddle_train.sh (for train data)
+or 
+$ ./TestSceneFlow.sh
 ```
 
 if you want to change the para of the model, you can change the *.sh file. Such as:
 ```
 $ vi TestStart.sh
+or 
+$ vi TestETH3D.sh
 ```
 
 ### File Struct
@@ -79,6 +97,26 @@ $ vi TestStart.sh
 ```
 
 ### Update log
+#### 2020-08-09
+1. Write the readMe;
+2. Refactor the code (Dataloader and BuiildGraph);
+
+#### 2020-07-30
+1. Refactor the code;
+2. Merge the code of SegCCNet;
+3. Merge the code of PANet;
+
+
+#### 2020-07-15
+1. Refactor the code;
+2. Add the network folder;
+3. Add the shell file to start programs by step.
+
+#### 2020-06-15
+1. Add the D data agumentation;
+2. Balance the data of datasets;
+3. Add the variance and concat;
+
 #### 2020-06-08
 1. Add spn;
 2. Add Refine;
@@ -92,7 +130,7 @@ $ vi TestStart.sh
 
 #### 2020-05-08
 1. New project for ROB;
-2. Add middlebury;
+2. Add Middlebury;
 3. ADD ETH3D;
 
 ___

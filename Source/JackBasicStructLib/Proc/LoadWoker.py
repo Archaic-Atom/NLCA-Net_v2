@@ -3,8 +3,15 @@ from JackBasicStructLib.Basic.Define import *
 from JackBasicStructLib.Basic.Paras import *
 from Basic.LogHandler import *
 
-import Queue
-import thread
+try:
+    import Queue  # 2.7
+except ImportError:
+    import queue as Queue  # 3.7
+
+try:
+    import thread  # 2.7
+except ImportError:
+    import _thread as thread  # 3.7
 
 
 class LoadWoker(object):
@@ -16,8 +23,8 @@ class LoadWoker(object):
         self._paras = paras
         self._randomTrainingList = range(paras.imgNum)
         self._randomValList = range(paras.valImgNum)
-        self._trainQueue = Queue.Queue(maxsize=30)
-        self._valQueue = Queue.Queue(maxsize=30)
+        self._trainQueue = Queue.Queue(maxsize=50)
+        self._valQueue = Queue.Queue(maxsize=50)
         self._exitFlag = 0
         self._num_tr_batch = int(paras.imgNum / paras.batchsize / paras.gpu)
         self._num_val_batch = int(paras.valImgNum / paras.batchsize / paras.gpu)
@@ -107,3 +114,6 @@ class LoadWoker(object):
 
     def GetMaxBatch(self):
         return self._num_tr_batch, self._num_val_batch
+
+    def QSize(self):
+        return self._trainQueue.qsize(), self._valQueue.qsize()

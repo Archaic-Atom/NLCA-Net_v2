@@ -2,8 +2,8 @@
 from JackBasicStructLib.Basic.Define import *
 from JackBasicStructLib.Evaluation.Algorithm import *
 from JackBasicStructLib.Basic.Processbar import *
-from BuildGraph import *
-from LoadWoker import *
+from .BuildGraph import *
+from .LoadWoker import *
 
 from ModelImplementation.NetWorkInference import NetWorkInference as ni
 
@@ -28,7 +28,7 @@ class Executor(object):
 
         num_tr_batch, num_val_batch = self.__loadWoker.GetMaxBatch()
 
-        for epoch in xrange(self.__paras.maxEpoch):
+        for epoch in range(self.__paras.maxEpoch):
             self.__TrainProc(self.__graph.TrainRun, self.__loadWoker.GetTrainData,
                              num_tr_batch, self.__dataloader.ShowTrainingResult,
                              epoch, "Train")
@@ -63,20 +63,23 @@ class Executor(object):
 
         for step in range(num_tr_batch):
             for testID in range(self.__paras.test_times):
+                trQsize, _ = self.__loadWoker.QSize()
                 input, supplement = self.__loadWoker.GetTrainData()
-                #start = time.time()
-                output = self.__graph.TestRun(input, supplement, False)
+                start = time.time()
+                output = self.__graph.TestRun(input, None, False)
+                duration = time.time() - start
                 self.__dataloader.SaveResult(output, supplement, step, testID)
-            duration = (time.time() - start_time) / (step + 1)
-            duration = (num_tr_batch - step - 1) * duration
-            #duration = time.time() - start
-            process_bar.show_process(restTime=duration)
+
+            #duration = (time.time() - start_time) / (step + 1)
+            #duration = (num_tr_batch - step - 1) * duration
+            process_bar.show_process(restTime=duration, queueSize=trQsize)
 
         duration = time.time() - start_time
         format_str = ('[TestProcess] Finish Test (%.3f sec/batch)')
         Info(format_str % (duration))
 
-    def __TrainProc(self, execFunc, dataloader, num_batch, showFunc, epoch, info="Train"):
+    def __TrainProc(self, execFunc, dataloader, num_batch,
+                    showFunc, epoch, info="Train"):
         if num_batch == 0:
             return
 
@@ -85,8 +88,9 @@ class Executor(object):
         process_bar = ShowProcess(num_batch, info)
         start_time = time.time()
 
-        for step in xrange(num_batch):
+        for step in range(num_batch):
             #tem_start_time = time.time()
+            trQsize, _ = self.__loadWoker.QSize()
             input, label = dataloader()
             _, loss, acc = execFunc(input, label, True)
             tr_loss.append(loss)
@@ -96,7 +100,7 @@ class Executor(object):
             info_str = self.__dataloader.ShowIntermediateResult(epoch, tem_loss, tem_acc)
             duration = (time.time() - start_time) / (step + 1)
             duration = (num_batch - step - 1) * duration
-            process_bar.show_process(showInfo=info_str, restTime=duration)
+            process_bar.show_process(showInfo=info_str, restTime=duration, queueSize=trQsize)
 
         duration = time.time() - start_time
         tr_loss = NumpyListMean(tr_loss)

@@ -1,4 +1,5 @@
 # -*- coding: UTF-8 -*-
+
 import sys
 import time
 
@@ -19,7 +20,7 @@ class ShowProcess():
         self.infoDone = infoDone
 
     # [>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>]100.00%
-    def show_process(self, i=None, showInfo='', restTime=''):
+    def show_process(self, i=None, showInfo='', restTime='', queueSize=''):
         if i is not None:
             self.i = i
         else:
@@ -27,19 +28,23 @@ class ShowProcess():
         num_arrow = int(self.i * self.max_arrow / self.max_steps)
         num_line = self.max_arrow - num_arrow
         percent = self.i * 100.0 / self.max_steps
+
         if self.i >= self.max_steps:
             infoDone = ', ' + self.infoDone
         else:
             infoDone = ''
 
+        if queueSize != '':
+            queueSize = '(qs: %d), ' % queueSize
+
         if restTime != '':
-            restTime = '(tr: %.3f sec)' % restTime
+            restTime = '(tr: %.3f s)' % restTime
 
         process_bar = '[' + self.info + '] [' + '>' * num_arrow  \
             + '-' * num_line + ']'                               \
             + ' %d / %d, ' % (self.i, self.max_steps)            \
             + '%.2f' % percent + '%' + ' '                       \
-            + showInfo + ' ' + restTime + infoDone               \
+            + showInfo + ' ' + queueSize + restTime + infoDone   \
             + '\r'
         sys.stdout.write(process_bar)
         sys.stdout.flush()
