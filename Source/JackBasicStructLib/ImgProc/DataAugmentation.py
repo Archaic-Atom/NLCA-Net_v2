@@ -16,7 +16,7 @@ def VerticalFlip(imgL, imgR, disp_gt, cls_gt):
         imgL = cv2.flip(imgL, 0)
         imgR = cv2.flip(imgR, 0)
         disp_gt = cv2.flip(disp_gt, 0)
-        #cls_gt = cv2.flip(cls_gt, 0)
+        # cls_gt = cv2.flip(cls_gt, 0)
 
     cls_gt = None
     return imgL, imgR, disp_gt, cls_gt
@@ -99,7 +99,7 @@ def RandomHueSaturationValue(image, hue_shift_limit=(-180, 180),
         val_shift = np.random.uniform(val_shift_limit[0], val_shift_limit[1])
         v = cv2.add(v, val_shift)
         image = cv2.merge((h, s, v))
-        #image = cv2.merge((s, v))
+        # image = cv2.merge((s, v))
         image = cv2.cvtColor(image, cv2.COLOR_HSV2BGR)
 
     return image
@@ -130,7 +130,89 @@ def StyleDataAugmentation(imgL, imgR, imgRef):
 def DispDataAugmentation():
     flip_prop = np.random.randint(low=0, high=10)
     d = 0
-    if flip_prop <= 3:
+    if flip_prop <= 4:
         d = np.random.randint(low=1, high=20)
 
     return d
+
+
+def AdjustBrightness(img, brightness_factor):
+    """Adjust brightness of an Image.
+    Args:
+        img (numpy ndarray): numpy ndarray to be adjusted.
+        brightness_factor (float):  How much to adjust the brightness. Can be
+            any non negative number. 0 gives a black image, 1 gives the
+            original image while 2 increases the brightness by a factor of 2.
+    Returns:
+        numpy ndarray: Brightness adjusted image.
+    """
+    if not IsNumpyImage(img):
+        raise TypeError('img should be numpy Image. Got {}'.format(type(img)))
+    table = np.array([i*brightness_factor for i in range(0, 256)]).clip(0, 255).astype('uint8')
+    # same thing but a bit slower
+    # cv2.convertScaleAbs(img, alpha=brightness_factor, beta=0)
+    if img.shape[2] == 1:
+        return cv2.LUT(img, table)[:, :, np.newaxis]
+    else:
+        return cv2.LUT(img, table)
+
+
+def AdjustContrast(img, contrast_factor):
+    """Adjust contrast of an mage.
+    Args:
+        img (numpy ndarray): numpy ndarray to be adjusted.
+        contrast_factor (float): How much to adjust the contrast. Can be any
+            non negative number. 0 gives a solid gray image, 1 gives the
+            original image while 2 increases the contrast by a factor of 2.
+    Returns:
+        numpy ndarray: Contrast adjusted image.
+    """
+    # much faster to use the LUT construction than anything else I've tried
+    # it's because you have to change dtypes multiple times
+    if not IsNumpyImage(img):
+        raise TypeError('img should be numpy Image. Got {}'.format(type(img)))
+    table = np.array([(i-74)*contrast_factor+74 for i in range(0, 256)]
+                     ).clip(0, 255).astype('uint8')
+    # enhancer = ImageEnhance.Contrast(img)
+    # img = enhancer.enhance(contrast_factor)
+    if img.shape[2] == 1:
+        return cv2.LUT(img, table)[:, :, np.newaxis]
+    else:
+        return cv2.LUT(img, table)
+
+
+def AdjustGamma(img, gamma, gain=1):
+    r"""Perform gamma correction on an image.
+    Also known as Power Law Transform. Intensities in RGB mode are adjusted
+    based on the following equation:
+    .. math::
+        I_{\text{out}} = 255 \times \text{gain} \times \left(\frac{I_{\text{in}}}{255}\right)^{\gamma}
+    See `Gamma Correction`_ for more details.
+    .. _Gamma Correction: https://en.wikipedia.org/wiki/Gamma_correction
+    Args:
+        img (numpy ndarray): numpy ndarray to be adjusted.
+        gamma (float): Non negative real number, same as :math:`\gamma` in the equation.
+            gamma larger than 1 make the shadows darker,
+            while gamma smaller than 1 make dark regions lighter.
+        gain (float): The constant multiplier.
+    """
+    if not IsNumpyImage(img):
+        raise TypeError('img should be numpy Image. Got {}'.format(type(img)))
+
+    if gamma < 0:
+        raise ValueError('Gamma should be a non-negative real number')
+    # from here
+    # https://stackoverflow.com/questions/33322488/how-to-change-image-illumination-in-opencv-python/41061351
+    table = np.array([((i / 255.0) ** gamma) * 255 * gain
+                      for i in np.arange(0, 256)]).astype('uint8')
+    if img.shape[2] == 1:
+        return cv2.LUT(img, table)[:, :, np.newaxis]
+    else:
+        return cv2.LUT(img, table)
+
+
+def ChromaticTransformations(img, brightness_factor, gamma, contrast_factor):
+    img = AdjustBrightness(img, brightness_factor)
+    img = AdjustGamma(img, gamma)
+    img = AdjustContrast(img, contrast_factor)
+    return img

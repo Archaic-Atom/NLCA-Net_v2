@@ -10,7 +10,7 @@ import os
 import linecache
 
 DEPTH_DIVIDING = 256.0
-DSP_NUM = 256
+DSP_NUM = 400
 
 
 def ReadPFM(file):
@@ -131,14 +131,14 @@ def OpenLogFile(path, is_continue=True):
 if __name__ == "__main__":
     h = 1024
     w = 1024
-    path = '/home1/jack/Documents/Programs/QSMNet_ROB/Dataset/labellist_disp_ETH3D.txt'
+    path = '/home2/raozhibo/Documents/Programs/QSMNet_ROB/Dataset/label_scene_flow.txt'
     a = tf.placeholder(tf.float32, shape=(h, w))
     res = Count(a)
     sess = tf.Session()
     sess.run(tf.global_variables_initializer())
 
-    img_num = 27
-    fd_res = OpenLogFile('4.txt', False)
+    img_num = 35454
+    fd_res = OpenLogFile('/home2/raozhibo/Documents/Programs/QSMNet_ROB/Result_2/1.txt', False)
 
     for i in range(img_num):
         img_path = GetPath(path, i+1)

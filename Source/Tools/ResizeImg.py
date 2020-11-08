@@ -10,7 +10,7 @@ def Mkdir(path):
     path = path.strip()
     path = path.rstrip("\\")
 
-    # check the file pat
+    # check the file path
     isExists = os.path.exists(path)
 
     if not isExists:
@@ -24,8 +24,8 @@ def ResizeImg(path, savePath):
     img = np.array(img)
     height, width, _ = img.shape
     # print height, width
-    height = int(height / 4)
-    width = int(width / 4)
+    height = int(height / 2)
+    width = int(width / 2)
     img = cv2.resize(img, (width, height), interpolation=cv2.INTER_CUBIC)
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     cv2.imwrite(savePath, img)
@@ -47,14 +47,12 @@ def ResizeImgFolder(path, savePath, name, filetype):
 
 
 if __name__ == '__main__':
-    root = '/Users/rhc/Documents/Scholar/Ph.D./MyPaper/BGA_Net/BGA_NET_TGRSS_ORIGIN/img/'
+    root = '/home2/raozhibo/Downloads/zed2/'
+    savePath = '/home2/raozhibo/Downloads/zed_v2/'
 
-    path = '/Users/rhc/Documents/Scholar/Ph.D./MyPaper/BGA_Net/BGA_NET_TGRSS_ORIGIN/img/Example/'
-    savePath = '/Users/rhc/Documents/Scholar/Ph.D./MyPaper' +\
-        '/BGA_Net/BGA_NET_TGRSS_ORIGIN/img/Example/SMALL/'
-
-    subfolders = ['Example/', 'Result/US3D/', 'Result/CityScape/', 'Result/KITTI/',
-                  'Result/Attention/dsp_attention/', 'Result/Attention/cls_attention/']
+    #subfolders = ['right/', 'left/']
+    subfolders = ['left/']
+    #subfolders = ['right/']
 
     name = '*.png'
     filetype = '.png'

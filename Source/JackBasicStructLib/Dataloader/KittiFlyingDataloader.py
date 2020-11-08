@@ -132,18 +132,26 @@ class KittiFlyingDataloader(object):
             imgRef = ReadImg(pathStyle)
             imgL, imgR = StyleDataAugmentation(imgL, imgR, imgRef)
 
+        # DataAugmentation
         d = DispDataAugmentation()
         # d = 0
+        random_brightness = np.random.uniform(0.5, 2.0, 2)
+        random_gamma = np.random.uniform(0.8, 1.2, 2)
+        random_contrast = np.random.uniform(0.8, 1.2, 2)
 
         # random crop
         x, y = RandomOrg(imgL.shape[1], imgL.shape[0], w + d, h)
         # x, y = RandomOrg(imgL.shape[1], imgL.shape[0], w, h)
         imgL = ImgSlice(imgL, x, y, w, h)
+        imgL = ChromaticTransformations(imgL, random_brightness[0],
+                                        random_gamma[0], random_contrast[0])
         imgL = Standardization(imgL)
 
         # the right img
         imgR = ImgSlice(imgR, x + d, y, w, h)
         # imgR = ImgSlice(imgR, x, y, w, h)
+        imgR = ChromaticTransformations(imgR, random_brightness[1],
+                                        random_gamma[1], random_contrast[1])
         imgR = Standardization(imgR)
 
         file_type = os.path.splitext(pathGround)[-1]

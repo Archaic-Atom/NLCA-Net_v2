@@ -80,7 +80,7 @@ class DataHandler(DataHandlerTemplate):
                 if args.dataset == "KITTI":
                     name = args.gpu*args.batchSize * \
                         imgID + i*args.batchSize + j
-                    self.kfd.SaveTestData(args, img, name)
+                    self.kfd.SaveKITTITestData(args, temRes, name)
                 elif args.dataset == "ETH3D":
                     name = names[i*args.batchSize+j]
                     self.kfd.SaveETH3DTestData(args, temRes, name, ttimes)

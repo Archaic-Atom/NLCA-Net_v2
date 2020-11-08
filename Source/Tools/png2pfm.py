@@ -1,14 +1,13 @@
 # -*- coding: utf-8 -*-
-from JackBasicStructLib.Basic.Define import *
+import re
+import numpy as np
+import sys
+from PIL import Image
+import cv2
+import glob
 
 
-def ReadImg(path):
-    img = Image.open(path).convert("RGB")
-    img = np.array(img)
-    return img
-
-
-def ReadPFM(file):
+def readPFM(file):
     file = open(file, 'rb')
 
     color = None
@@ -48,7 +47,7 @@ def ReadPFM(file):
     return data, scale
 
 
-def WritePFM(file, image, scale=1):
+def writePfm(file, image, scale=1):
     file = open(file, mode='wb')
     color = None
 
@@ -80,59 +79,17 @@ def WritePFM(file, image, scale=1):
     file.close()
 
 
-def RGB2LAB(img):
-    img = cv2.cvtColor(img, cv2.COLOR_RGB2LAB)
-    img = img.astype(np.float32)
-    img[:, :, 0] = img[:, :, 0] * 100 / 255
-    img[:, :, 1] = img[:, :, 1] - 128
-    img[:, :, 2] = img[:, :, 2] - 128
-    return img
+if __name__ == '__main__':
+    path = '/Users/rhc/WorkPlace/Programs/GANet/result_eth/'
+    files = glob.glob(path + '/*.png')
 
+    for i in range(len(files)):
+        file_name = files[i]
+        disp = Image.open(file_name)
+        disp = np.ascontiguousarray(disp, dtype=np.float32)/float(256.0)
 
-def LAB2RGB(img):
-    img[:, :, 0] = img[:, :, 0] * 255 / 100
-    img[:, :, 1] = img[:, :, 1] + 128
-    img[:, :, 2] = img[:, :, 2] + 128
-    img = np.clip(img, 0, 255)
-    img = img.astype(np.uint8)
-    img = cv2.cvtColor(img, cv2.COLOR_LAB2RGB)
-    return img
-
-
-def MeanVar(img):
-    mean = np.mean(img)
-    var = math.sqrt(np.var(img))
-    return mean, var
-
-
-def RGB2GRAY(img):
-    imgG = copy.deepcopy(img)
-    img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
-    imgG[:, :, 0] = img
-    imgG[:, :, 1] = img
-    imgG[:, :, 2] = img
-    return imgG
-
-
-def StyleTransfer(imgS, ImgR):
-    imgS_LAB = RGB2LAB(imgS)
-    imgR_LAB = RGB2LAB(ImgR)
-
-    mean_S, var_S = MeanVar(imgS_LAB)
-    # print mean_S, var_S
-
-    mean_R, var_R = MeanVar(imgR_LAB)
-    # print mean_R, var_R
-
-    imgS_LAB = imgS_LAB - mean_S
-    lamda = var_R / var_S
-    imgS_LAB = lamda * imgS_LAB
-    imgS_LAB = imgS_LAB + mean_R
-
-    imgS_RGB = LAB2RGB(imgS_LAB)
-
-    return imgS_RGB
-
-
-def IsNumpyImage(img):
-    return isinstance(img, np.ndarray) and (img.ndim in {2, 3})
+        pos = file_name.rfind('.png')
+        disp_name = file_name[0:pos]
+        pos = disp_name.rfind('/')
+        name = disp_name[pos + 1:]
+        writePfm(path+name+'.pfm', disp)

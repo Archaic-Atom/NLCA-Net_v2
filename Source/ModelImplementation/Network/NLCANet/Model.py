@@ -140,6 +140,8 @@ class NLCANet(ModelTemplate):
                                                   imgL_feature, training=training)
             Info('    └── After Fusion:' + str(refine_map.get_shape()))
 
+            #mask = tf.squeeze(mask, axis=3)
+            # refine_map = mask * coarse_map # confident map
         return coarse_map, output_cspn, refine_map
 
     def __GetVar(self, input):
