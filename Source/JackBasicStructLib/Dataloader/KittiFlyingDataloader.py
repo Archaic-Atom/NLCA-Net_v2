@@ -33,7 +33,7 @@ class KittiFlyingDataloader(object):
         Mkdir(folder_name)
         method_name = "disp0NLCA_NET_v2_RVC.pfm"
         path = folder_name + method_name
-        WritePFM(path, temRes)
+        WritePFM(path, img)
 
         time_name = "timeNLCA_NET_v2_RVC.txt"
         path = folder_name + time_name
