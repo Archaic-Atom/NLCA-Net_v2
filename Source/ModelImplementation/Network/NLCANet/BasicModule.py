@@ -78,6 +78,7 @@ class BuildCostVolumeModule(object):
         with tf.variable_scope("BuildCostVolume") as scope:
             imgL_2, imgR_2 = self.__FusionFeatureBlock(imgL, imgR, training=training)
             cost_vol = self.__BuildCostVolumeBlock(imgL, imgR, imgL_2, imgR_2, disp_num)
+            scope.reuse_variables()
         return cost_vol
 
     def __FusionFeatureBlock(self, imgL, imgR, training=True):
@@ -127,10 +128,11 @@ class MatchingModule(object):
         self.arg = arg
 
     def Inference(self, x, reliability=0.65, training=True):
-        with tf.variable_scope("MatchingModule"):
+        with tf.variable_scope("MatchingModule") as scope:
             x = self.__FeatureMatchingBlock(x, training=training)
             x = self.__RecoverSizeBlock(x, training=training)
             x, mask = self.__SoftArgMinBlock(x, reliability=0.65)
+            scope.reuse_variables()
         return x, mask
 
     def __FeatureMatchingBlock(self, x, training=True):

@@ -19,6 +19,12 @@ class NLCANet(ModelTemplate):
         self.output_cspn_img_id = 1
         self.output_refine_img_id = 2
 
+        self.max_height = 2112
+        self.max_width = 2496
+        self.patch_height = 352
+
+        self.down_sampling_times = 16
+
         if training == True:
             self.height = args.corpedImgHeight
             self.width = args.corpedImgWidth
@@ -113,26 +119,49 @@ class NLCANet(ModelTemplate):
                 imgR_feature = ExtractUnaryFeatureModule().Inference(imgR, training=training)
             Info('│   └── After ExtractUnaryFeature:' + str(imgL_feature.get_shape()))
 
-            Info('├── Begin Build Cost Volume')
-            cost_vol = BuildCostVolumeModule().Inference(imgL_feature,
-                                                         imgR_feature,
-                                                         IMG_DISPARITY,
-                                                         training=training)
-            Info('│   └── After Cost Volume:' + str(cost_vol.get_shape()))
+            _, height, width, feature_num = imgL_feature.get_shape().as_list()
 
-            Info('├── Begin Build 3DMatching')
-            coarse_map, mask = MatchingModule().Inference(cost_vol,
-                                                          reliability=0.65,
-                                                          training=training)
-            Info('│   └── After 3DMatching:' + str(coarse_map.get_shape()))
+            assert ((height % self.down_sampling_times == 0)
+                    and width % self.down_sampling_times == 0)
+
+            patch_num = height // self.patch_height
+
+            for i in range(patch_num):
+                start_h = i * self.patch_height
+                slice_features_l = tf.slice(imgL_feature, [0, start_h, 0, 0],
+                                            [-1, self.patch_height, width, feature_num])
+                slice_features_r = tf.slice(imgR_feature, [0, start_h, 0, 0],
+                                            [-1, self.patch_height, width, feature_num])
+
+                Info('├── Begin Build Cost Volume')
+                tmp_cost_vol = BuildCostVolumeModule().Inference(slice_features_l,
+                                                                 slice_features_r,
+                                                                 IMG_DISPARITY,
+                                                                 training=training)
+                Info('│   └── After Cost Volume:' + str(tmp_cost_vol.get_shape()))
+
+                Info('├── Begin Build 3DMatching')
+                tmp_coarse_map, tmp_mask = MatchingModule().Inference(tmp_cost_vol,
+                                                                      reliability=0.65,
+                                                                      training=training)
+                Info('│   └── After 3DMatching:' + str(tmp_coarse_map.get_shape()))
+
+                if i == 0:
+                    coarse_map = tmp_coarse_map
+                    mask = tmp_mask
+                else:
+                    coarse_map = tf.concat([coarse_map, tmp_coarse_map], axis=1)
+                    mask = tf.concat([mask, tmp_mask], axis=1)
+
+            Info('│   └── After final 3DMatching:' + str(coarse_map.get_shape()))
 
             Info('├── Begin Build Guidance')
-            guidance = GetGuidanceModule().Inference(imgL, training=training)
-            Info('│   └── After Guidance:' + str(guidance.get_shape()))
+            cspn_guidance = GetGuidanceModule().Inference(imgL, training=training)
+            Info('│   └── After Guidance:' + str(cspn_guidance.get_shape()))
 
             Info('├── Begin Build DispMapRefine')
             output_cspn = DispRefinementModule().Inference(coarse_map, mask,
-                                                           guidance, training=training)
+                                                           cspn_guidance, training=training)
             Info('│   └── After DispMapRefine:' + str(output_cspn.get_shape()))
 
             Info('└── Begin Build Fusion')
