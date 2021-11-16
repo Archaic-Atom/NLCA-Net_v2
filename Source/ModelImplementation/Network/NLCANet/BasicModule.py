@@ -2,6 +2,7 @@
 from JackBasicStructLib.NN.Layer import *
 from JackBasicStructLib.NN.Block import *
 from JackBasicStructLib.FamousBlock.CSPN import *
+import tensorflow as tf
 
 
 class ExtractUnaryFeatureModule(object):
@@ -96,7 +97,7 @@ class BuildCostVolumeModule(object):
             _, _, _, feature_num_2 = imgL_2.get_shape().as_list()
             cost_vol = []
             concat_cost_vol = []
-            for d in xrange(1, int(disp_num/4) + 1):
+            for d in xrange(1, int(disp_num / 4) + 1):
                 # var
                 paddings = [[0, 0], [0, 0], [d, 0], [0, 0]]
                 slice_featuresR = tf.slice(imgR, [0, 0, 0, 0],
@@ -174,7 +175,7 @@ class MatchingModule(object):
 
             # 1/64
             x = DownSamplingBlock(x, 3, 128, "Level_4", training=training)
-            x = self.__NonLocalGroupBlock(x, 5, "Non_v2",  training=training)
+            x = self.__NonLocalGroupBlock(x, 5, "Non_v2", training=training)
         return x, level_list
 
     def __NonLocalGroupBlock(self, x, num, name, training=True):

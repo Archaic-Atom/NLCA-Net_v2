@@ -57,7 +57,7 @@ if __name__ == "__main__":
     for i in xrange(200):
         imgPath = './ResultImg/%06d_10.png' % (i)
         groundPath = '/home1/Documents/Database/Kitti/testing/disp_occ_0/%06d_10.png' % (i)
-#        if i % 5 != 0:
+        #        if i % 5 != 0:
         # continue
         img = Image.open(imgPath)
         imgGround = Image.open(groundPath)

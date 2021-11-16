@@ -4,8 +4,6 @@ from Basic.LogHandler import *
 from Basic.Define import *
 from JackBasicStructLib.Basic.Paras import *
 from Network.NLCANet.Model import NLCANet as nlca_v1
-from Network.NLCANet_cat_val_spn.Model import NLCANet as nlca_v2
-from Network.NLCANet_gn_spn.Model import NLCANet as nlca_v3
 from Dataloader.Dataloader import *
 
 
@@ -20,18 +18,6 @@ class NetWorkInference(object):
                 Info("Begin loading NLCA_Net Model")
                 paras = self.__Args2Paras(args, is_training)
                 model = nlca_v1(args, is_training)
-                dataHandler = DataHandler(args)
-                break
-            if case('NLCANet_v2'):
-                Info("Begin loading NLCA_Net_v2 Model")
-                paras = self.__Args2Paras(args, is_training)
-                model = nlca_v2(args, is_training)
-                dataHandler = DataHandler(args)
-                break
-            if case('NLCANet_v3'):
-                Info("Begin loading NLCA_Net_v3 Model")
-                paras = self.__Args2Paras(args, is_training)
-                model = nlca_v3(args, is_training)
                 dataHandler = DataHandler(args)
                 break
             if case():

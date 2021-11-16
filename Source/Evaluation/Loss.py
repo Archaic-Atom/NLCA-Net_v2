@@ -2,9 +2,9 @@
 from Basic.Define import *
 
 # Test the code of loss
-#import tensorflow as tf
-#import numpy as np
-#IMG_DISPARITY = 192
+# import tensorflow as tf
+# import numpy as np
+# IMG_DISPARITY = 192
 
 LOSS_EPSILON = 1e-7
 NO_DATA = 0
@@ -30,8 +30,8 @@ def MAE_Loss(result, labels):
     #    tf.GraphKeys.REGULARIZATION_LOSSES)
 
     # get the loss
-    #loss_final = tf.add_n([loss_mean] + regularization_losses)
-    #loss_final = loss_mean
+    # loss_final = tf.add_n([loss_mean] + regularization_losses)
+    # loss_final = loss_mean
     return loss_mean
 
 
@@ -65,8 +65,8 @@ def MAE_Loss_v2(result, labels):
     #    tf.GraphKeys.REGULARIZATION_LOSSES)
 
     # get the loss
-    #loss_final = tf.add_n([loss_mean] + regularization_losses)
-    #loss_final = loss_mean
+    # loss_final = tf.add_n([loss_mean] + regularization_losses)
+    # loss_final = loss_mean
     return loss_mean
 
 
@@ -78,7 +78,7 @@ def L2_loss(loss, alphi=1):
     # get the loss
     # print len(regularization_losses)
 
-    regularization_losses = [x*alphi for x in regularization_losses]
+    regularization_losses = [x * alphi for x in regularization_losses]
 
     # print len(regularization_losses)
     loss_final = tf.add_n([loss] + regularization_losses)
@@ -107,11 +107,15 @@ def Cross_Entropy(res, labels, cls_num):
     # regularization_losses = tf.get_collection(
     #    tf.GraphKeys.REGULARIZATION_LOSSES)
 
-    #loss_final = tf.add_n([cross_entropy] + regularization_losses)
+    # loss_final = tf.add_n([cross_entropy] + regularization_losses)
     return cross_entropy
 
 
 if __name__ == "__main__":
+    import numpy as np
+    import tensorflow as tf
+    IMG_DISPARITY = 192
+
     a = tf.placeholder(tf.float32, shape=(2, 3, 3))
     b = tf.placeholder(tf.float32, shape=(2, 3, 3))
     c = MAE_Loss(a, b)
