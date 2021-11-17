@@ -7,9 +7,7 @@ def OpenFile(path):
     if os.path.exists(path):
         os.remove(path)
 
-    fd_test_list = open(path, 'a')
-
-    return fd_test_list
+    return open(path, 'a')
 
 
 def OutputData(outputFile, data):
@@ -35,7 +33,7 @@ def GenList(left_imgs_folder_path, right_imgs_folder_path, raw_data_type, fd_tes
         OutputData(fd_test_list, left_img_path)
         OutputData(fd_test_list, right_img_path)
 
-        total = total + 1
+        total += 1
 
     return total
 

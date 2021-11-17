@@ -23,8 +23,6 @@ def MAE_Loss(result, labels):
     mask = tf.logical_and(mask1, mask2)
     loss_sum = tf.reduce_sum(loss_)
     mask = tf.cast(mask, tf.float32)
-    loss_mean = tf.div(loss_sum, tf.reduce_sum(mask) + LOSS_EPSILON)
-
     # get the l2
     # regularization_losses = tf.get_collection(
     #    tf.GraphKeys.REGULARIZATION_LOSSES)
@@ -32,7 +30,7 @@ def MAE_Loss(result, labels):
     # get the loss
     # loss_final = tf.add_n([loss_mean] + regularization_losses)
     # loss_final = loss_mean
-    return loss_mean
+    return tf.div(loss_sum, tf.reduce_sum(mask) + LOSS_EPSILON)
 
 
 def MAE_Loss_v2(result, labels):
@@ -58,8 +56,6 @@ def MAE_Loss_v2(result, labels):
     loss_sum = tf.reduce_sum(loss_1 + loss_2)
 
     mask = tf.cast(mask, tf.float32)
-    loss_mean = tf.div(loss_sum, tf.reduce_sum(mask) + LOSS_EPSILON)
-
     # get the l2
     # regularization_losses = tf.get_collection(
     #    tf.GraphKeys.REGULARIZATION_LOSSES)
@@ -67,7 +63,7 @@ def MAE_Loss_v2(result, labels):
     # get the loss
     # loss_final = tf.add_n([loss_mean] + regularization_losses)
     # loss_final = loss_mean
-    return loss_mean
+    return tf.div(loss_sum, tf.reduce_sum(mask) + LOSS_EPSILON)
 
 
 def L2_loss(loss, alphi=1):
@@ -80,10 +76,7 @@ def L2_loss(loss, alphi=1):
 
     regularization_losses = [x * alphi for x in regularization_losses]
 
-    # print len(regularization_losses)
-    loss_final = tf.add_n([loss] + regularization_losses)
-
-    return loss_final
+    return tf.add_n([loss] + regularization_losses)
 
 
 def Cross_Entropy(res, labels, cls_num):
@@ -99,16 +92,12 @@ def Cross_Entropy(res, labels, cls_num):
     prediction = tf.gather(raw_prediction, indices)
     # print prediction.get_shape()
     gt = tf.one_hot(gt, depth=cls_num)
-    # print gt.get_shape()
-
-    cross_entropy = tf.reduce_mean(
-        tf.nn.softmax_cross_entropy_with_logits_v2(labels=gt, logits=prediction))
-
     # regularization_losses = tf.get_collection(
     #    tf.GraphKeys.REGULARIZATION_LOSSES)
 
     # loss_final = tf.add_n([cross_entropy] + regularization_losses)
-    return cross_entropy
+    return tf.reduce_mean(
+        tf.nn.softmax_cross_entropy_with_logits_v2(labels=gt, logits=prediction))
 
 
 if __name__ == "__main__":
