@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#from Basic.Define import *
+# from Basic.Define import *
 
 
 # Test the code of acc
@@ -103,12 +103,10 @@ def Acc(result, labels):
                 if groundTrue[k, i, j] != 0:     # this point is effect
                     point = err[k, i, j]         # get the error
                     if point > ACC_PIXEL and point / groundTrue[k, i, j] > RELATE_ERR:
-                        num = num + 1
-                    total = total + 1
+                        num += 1
+                    total += 1
 
-    acc = 0
-    if total != 0:
-        acc = num / float(str(total))
+    acc = num / float(str(total)) if total != 0 else 0
     # diff = result - labels
     # num = np.sum(diff == True)
     # total = diff.shape[0] * diff.shape[1]
@@ -118,9 +116,7 @@ def Acc(result, labels):
 
 def AccClassification(res, labels):
     correct_prediction = tf.equal(tf.argmax(res, 1), tf.argmax(labels, 1))
-    accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
-
-    return accuracy
+    return tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
 
 if __name__ == "__main__":
@@ -132,12 +128,12 @@ if __name__ == "__main__":
     sess = tf.Session()
     sess.run(tf.global_variables_initializer())
 
-    #m = np.array([[1, 2, 4], [8, 3, 3], [3, 3, 3]])
-    #m = np.expand_dims(m, axis=0)
-    #m = np.concatenate((m, m), axis=0)
-    #n = np.array([[3, 3, 0], [2, 5, 3], [3, 3, 3]])
-    #n = np.expand_dims(n, axis=0)
-    #n = np.concatenate((n, n), axis=0)
+    # m = np.array([[1, 2, 4], [8, 3, 3], [3, 3, 3]])
+    # m = np.expand_dims(m, axis=0)
+    # m = np.concatenate((m, m), axis=0)
+    # n = np.array([[3, 3, 0], [2, 5, 3], [3, 3, 3]])
+    # n = np.expand_dims(n, axis=0)
+    # n = np.concatenate((n, n), axis=0)
     #
     m = np.random.randint(0, 192, size=(5, 512, 256))
     m = m.astype(np.float32)
