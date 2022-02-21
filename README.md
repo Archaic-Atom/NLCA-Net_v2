@@ -2,10 +2,15 @@
 
 ### Paper Information
 @article{rao2022rethinking,
+
   title={Rethinking Training Strategy in Stereo Matching},
+  
   author={Rao, Zhibo and Dai, Yuchao and Shen, Zhelun and He, Renjie},
+  
   journal={IEEE Transactions on Neural Networks and Learning Systems},
+  
   year={2022},
+  
   publisher={IEEE}
 }
 
