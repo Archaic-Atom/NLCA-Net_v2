@@ -1,5 +1,14 @@
 >This is the project of the StereoMatching Project. This project based on my framework (if you want to use it to build the Network, you can find it on my website: [fadeshine](http://www.fadeshine.com/). If you have any questions, you can send an e-mail to me. My e-mail: raoxi36@foxmail.com)
 
+### Paper Information
+@article{rao2022rethinking,
+  title={Rethinking Training Strategy in Stereo Matching},
+  author={Rao, Zhibo and Dai, Yuchao and Shen, Zhelun and He, Renjie},
+  journal={IEEE Transactions on Neural Networks and Learning Systems},
+  year={2022},
+  publisher={IEEE}
+}
+
 ### Software Environment
 1. OS Environment
 os == linux 16.04
